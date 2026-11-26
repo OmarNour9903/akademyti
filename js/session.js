@@ -1,5 +1,5 @@
-import { auth, db, authMod, fs } from "./firebase.js?v=20261126223043";
-import { OWNER_EMAIL } from "./config.js?v=20261126223043";
+import { auth, db, authMod, fs } from "./firebase.js?v=20261126224220";
+import { OWNER_EMAIL } from "./config.js?v=20261126224220";
 
 export const isOwnerUser = (user) => !!user && user.email && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase();
 
@@ -17,6 +17,7 @@ export async function loadSession(user) {
 
 export function homeFor(role) {
   if (role === "owner") return "owner.html";
+  if (role === "student" || role === "instructor") return "portal.html";
   return "app.html";
 }
 

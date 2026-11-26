@@ -1,8 +1,8 @@
-import { db, fs } from "../firebase.js?v=20261126223043";
-import { t } from "../i18n.js?v=20261126223043";
-import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126223043";
-import { col, ref, userRef, audit, listActive, softDelete } from "../data.js?v=20261126223043";
-import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126223043";
+import { db, fs } from "../firebase.js?v=20261126224220";
+import { t } from "../i18n.js?v=20261126224220";
+import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126224220";
+import { col, ref, userRef, audit, listActive, softDelete } from "../data.js?v=20261126224220";
+import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126224220";
 
 export async function render(root) {
   root.innerHTML = `

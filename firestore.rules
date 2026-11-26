@@ -13,12 +13,16 @@ service cloud.firestore {
     function isEmployee(t) { return inTenant(t) && me().type == 'employee'; }
     // صلاحية الموظف على جزء معيّن (المدير له كل الصلاحيات)
     function can(t, m, a) { return isTenantAdmin(t) || (isEmployee(t) && a in me().get('perms', {}).get(m, [])); }
+    function hasSpecial(t, s) { return isTenantAdmin(t) || (isEmployee(t) && s in me().get('special', [])); }
     function deletedChanged() { return request.resource.data.get('deleted', false) != resource.data.get('deleted', false); }
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isOwner() || isTenantAdmin(resource.data.tenantId));
       allow create: if isOwner()
-        || (isTenantAdmin(request.resource.data.tenantId) && request.resource.data.type in ['employee', 'student', 'instructor', 'admin']);
+        || (isTenantAdmin(request.resource.data.tenantId) && request.resource.data.type in ['employee', 'student', 'instructor', 'admin'])
+        // موظف عنده صلاحية إضافة طلاب/محاضرين يقدر يعمل لهم حساب بوابة (من غير أي صلاحيات)
+        || (request.resource.data.type == 'student' && can(request.resource.data.tenantId, 'students', 'add') && !request.resource.data.keys().hasAny(['perms', 'special']))
+        || (request.resource.data.type == 'instructor' && can(request.resource.data.tenantId, 'instructors', 'add') && !request.resource.data.keys().hasAny(['perms', 'special']));
       // الصلاحيات والحالة بيعدّلها المدير بس — المستخدم ميقدرش يعدّل مستنده
       allow update: if isOwner()
         || (isTenantAdmin(resource.data.tenantId) && request.resource.data.tenantId == resource.data.tenantId);
@@ -63,11 +67,20 @@ service cloud.firestore {
       }
 
       // باقي الأجزاء: حسب الصلاحيات. المسح = نقل للسلة ومحتاج صلاحية "يمسح"، والمسح النهائي للمدير بس
+      // تغيير السعر محتاج صلاحية "تعديل الأسعار"
+      function priceChangeOk(t, coll) {
+        return !(coll in ['courses', 'groups']) || request.resource.data.get('price', null) == resource.data.get('price', null) || hasSpecial(t, 'changePrice');
+      }
+      function groupCreatePriceOk(t, coll) {
+        return coll != 'groups' || hasSpecial(t, 'changePrice')
+          || request.resource.data.price == get(/databases/$(database)/documents/tenants/$(t)/courses/$(request.resource.data.courseId)).data.price;
+      }
+
       match /{coll}/{id} {
         allow read: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && can(t, coll, 'view');
-        allow create: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && can(t, coll, 'add');
+        allow create: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && can(t, coll, 'add') && groupCreatePriceOk(t, coll);
         allow update: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings'])
-          && ((!deletedChanged() && can(t, coll, 'edit')) || (deletedChanged() && can(t, coll, 'delete')));
+          && ((!deletedChanged() && can(t, coll, 'edit') && priceChangeOk(t, coll)) || (deletedChanged() && can(t, coll, 'delete')));
         allow delete: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && isTenantAdmin(t);
       }
     }

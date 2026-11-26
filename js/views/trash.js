@@ -1,12 +1,16 @@
-import { db, fs } from "../firebase.js?v=20261126223043";
-import { t } from "../i18n.js?v=20261126223043";
-import { esc, toast, confirmBox } from "../util.js?v=20261126223043";
-import { col, ref, userRef, restore, purge } from "../data.js?v=20261126223043";
+import { db, fs } from "../firebase.js?v=20261126224220";
+import { t } from "../i18n.js?v=20261126224220";
+import { esc, toast, confirmBox } from "../util.js?v=20261126224220";
+import { col, ref, userRef, restore, purge } from "../data.js?v=20261126224220";
 
 // الأجزاء اللي بتدخل السلة (هتزيد مع كل مرحلة)
 const SOURCES = [
   { key: "departments", title: () => (x) => x.name },
-  { key: "employees", title: () => (x) => `${x.code} ${x.name}` }
+  { key: "employees", title: () => (x) => `${x.code} ${x.name}` },
+  { key: "courses", title: () => (x) => `${x.code} ${x.name}` },
+  { key: "groups", title: () => (x) => `${x.code} ${x.courseName || ""}` },
+  { key: "students", title: () => (x) => `${x.code} ${x.name}` },
+  { key: "instructors", title: () => (x) => `${x.code} ${x.name}` }
 ];
 
 export async function render(root) {

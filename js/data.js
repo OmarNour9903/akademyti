@@ -1,4 +1,4 @@
-import { db, fs } from "./firebase.js?v=20261126223043";
+import { db, fs } from "./firebase.js?v=20261126224220";
 
 let S;
 export const setSession = (s) => { S = s; };
@@ -6,6 +6,17 @@ export const session = () => S;
 export const col = (name) => fs.collection(db, "tenants", S.tenant.id, name);
 export const ref = (name, id) => fs.doc(db, "tenants", S.tenant.id, name, id);
 export const userRef = (uid) => fs.doc(db, "users", uid);
+
+// رقم متسلسل لكل نوع
+export async function nextNumber(entity) {
+  const r = ref("counters", entity);
+  return fs.runTransaction(db, async (tx) => {
+    const snap = await tx.get(r);
+    const next = (snap.exists() ? snap.data().n : 0) + 1;
+    tx.set(r, { n: next });
+    return next;
+  });
+}
 
 // كود فريد متسلسل لكل نوع (STD-00001 ...)
 export async function nextCode(entity, prefix, pad = 4) {

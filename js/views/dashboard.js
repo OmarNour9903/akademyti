@@ -1,7 +1,7 @@
-import { fs } from "../firebase.js?v=20261126223043";
-import { t } from "../i18n.js?v=20261126223043";
-import { col, session } from "../data.js?v=20261126223043";
-import { can } from "../perms.js?v=20261126223043";
+import { fs } from "../firebase.js?v=20261126224220";
+import { t } from "../i18n.js?v=20261126224220";
+import { col, session } from "../data.js?v=20261126224220";
+import { can } from "../perms.js?v=20261126224220";
 
 const card = (icon, cls, key, id) => `<div class="col-md-4"><div class="card stat-card p-3 d-flex flex-row align-items-center gap-3">
   <div class="stat-icon ${cls}"><i class="bi ${icon}"></i></div>
@@ -22,5 +22,5 @@ export async function render(root) {
   const set = async (id, q) => { const el = root.querySelector("#" + id); if (el) el.textContent = await count(q); };
   set("statTotal", fs.query(col("students"), fs.where("deleted", "==", false)));
   set("statCurrent", fs.query(col("enrollments"), fs.where("status", "==", "active")));
-  set("statCourses", fs.query(col("courses"), fs.where("status", "==", "available")));
+  set("statCourses", fs.query(col("courses"), fs.where("status", "==", "available"), fs.where("deleted", "==", false)));
 }

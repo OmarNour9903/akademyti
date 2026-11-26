@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=20261126223043">
+  <link rel="stylesheet" href="css/style.css?v=20261126224220">
   <title>أكاديميتي</title>
 </head>
 <body>
@@ -17,6 +17,7 @@
       <nav class="nav flex-column py-2" id="sideNav">
         <a href="#dashboard" class="nav-link" data-view="dashboard"><i class="bi bi-speedometer2"></i><span data-i18n="dashboard">لوحة التحكم</span></a>
         <a href="#courses" class="nav-link" data-view="courses" data-perm="courses"><i class="bi bi-journal-bookmark"></i><span data-i18n="courses">الكورسات</span></a>
+        <a href="#groups" class="nav-link" data-view="groups" data-perm="groups"><i class="bi bi-collection"></i><span data-i18n="groups">المجموعات</span></a>
         <a href="#students" class="nav-link" data-view="students" data-perm="students"><i class="bi bi-people"></i><span data-i18n="students">الطلاب</span></a>
         <a href="#instructors" class="nav-link" data-view="instructors" data-perm="instructors"><i class="bi bi-person-video3"></i><span data-i18n="instructors">المحاضرين</span></a>
         <a href="#finance" class="nav-link" data-view="finance" data-perm="payments"><i class="bi bi-cash-coin"></i><span data-i18n="finance">الحسابات</span></a>
@@ -31,7 +32,7 @@
     <div class="main">
       <header class="topbar">
         <button id="menuBtn" class="btn btn-light d-lg-none" aria-label="menu"><i class="bi bi-list"></i></button>
-        <input id="searchBox" class="form-control search" data-i18n-ph="search_code" placeholder="ابحث بالكود أو الاسم...">
+        <div class="search-wrap"><input id="searchBox" class="form-control search" data-i18n-ph="search_code" placeholder="ابحث بالكود أو الاسم..." autocomplete="off"><div id="searchResults" class="search-results d-none"></div></div>
         <div class="ms-auto d-flex align-items-center gap-2">
           <span class="text-muted small d-none d-md-inline"><span data-i18n="welcome">أهلاً</span>، <span id="userName"></span> <span id="roleBadge" class="badge text-bg-light"></span></span>
           <button id="langBtn" class="btn btn-light btn-sm" data-i18n="lang">English</button>
@@ -60,6 +61,6 @@
   <div id="toastBox" class="toast-box"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="js/app.js?v=20261126223043"></script>
+  <script type="module" src="js/app.js?v=20261126224220"></script>
 </body>
 </html>

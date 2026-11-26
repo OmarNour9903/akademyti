@@ -1,6 +1,6 @@
-import { auth, authMod, fs, createAccount } from "./firebase.js?v=20261126224610";
-import { userRef, session } from "./data.js?v=20261126224610";
-import { UserError } from "./util.js?v=20261126224610";
+import { auth, authMod, fs, createAccount } from "./firebase.js?v=20261126225035";
+import { userRef, session } from "./data.js?v=20261126225035";
+import { UserError } from "./util.js?v=20261126225035";
 
 // حساب دخول لطالب أو محاضر (البوابة)
 export async function createLogin(type, refId, name, email, password) {
@@ -17,6 +17,7 @@ export async function createLogin(type, refId, name, email, password) {
 }
 
 export async function sendReset(email) {
+  if (isPreview()) throw new UserError("preview_readonly");
   await authMod.sendPasswordResetEmail(auth, email);
 }
 

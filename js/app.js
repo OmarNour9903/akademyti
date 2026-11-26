@@ -1,7 +1,7 @@
-import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126224610";
-import { requireSession, logout } from "./session.js?v=20261126224610";
-import { setSession } from "./data.js?v=20261126224610";
-import { can } from "./perms.js?v=20261126224610";
+import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126225035";
+import { requireSession, logout } from "./session.js?v=20261126225035";
+import { setSession } from "./data.js?v=20261126225035";
+import { can } from "./perms.js?v=20261126225035";
 
 applyI18n();
 document.getElementById("logoutBtn").addEventListener("click", logout);
@@ -9,25 +9,38 @@ document.getElementById("menuBtn").addEventListener("click", () => document.getE
 
 const session = await requireSession(["admin", "employee"]);
 setSession(session);
+const realAdmin = session.role === "admin";
+const preview = applyPreview(session);
 const isAdmin = session.role === "admin";
+if (preview) {
+  setPreviewMode(true);
+  const bar = document.getElementById("previewBar");
+  bar.querySelector("#previewName").textContent = preview.name;
+  bar.classList.remove("d-none");
+  bar.querySelector("#exitPreview").addEventListener("click", exitPreview);
+}
+const viewAsBtn = document.getElementById("viewAsBtn");
+viewAsBtn.classList.toggle("d-none", !realAdmin);
+viewAsBtn.addEventListener("click", () => (preview ? exitPreview() : openPicker(session)));
+window.addEventListener("unhandledrejection", (e) => { if (e.reason && e.reason.userMessage) toast(e.reason.userMessage, "warning"); });
 document.getElementById("tenantName").textContent = session.tenant.name;
 document.getElementById("userName").textContent = session.profile.name;
-document.getElementById("roleBadge").textContent = t(isAdmin ? "role_admin" : "role_employee");
+document.getElementById("roleBadge").textContent = preview ? t("previewing") : t(isAdmin ? "role_admin" : "role_employee");
 
 const views = {
-  dashboard: { load: () => import("./views/dashboard.js?v=20261126224610") },
-  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126224610") },
-  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126224610"), detail: true },
-  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126224610") },
-  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126224610"), detail: true },
-  students: { perm: "students", load: () => import("./views/students.js?v=20261126224610") },
-  student: { perm: "students", load: () => import("./views/students.js?v=20261126224610"), detail: true },
-  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126224610") },
-  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126224610"), detail: true },
-  departments: { admin: true, load: () => import("./views/departments.js?v=20261126224610") },
-  employees: { admin: true, load: () => import("./views/employees.js?v=20261126224610") },
-  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126224610") },
-  trash: { admin: true, load: () => import("./views/trash.js?v=20261126224610") }
+  dashboard: { load: () => import("./views/dashboard.js?v=20261126225035") },
+  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126225035") },
+  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126225035"), detail: true },
+  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126225035") },
+  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126225035"), detail: true },
+  students: { perm: "students", load: () => import("./views/students.js?v=20261126225035") },
+  student: { perm: "students", load: () => import("./views/students.js?v=20261126225035"), detail: true },
+  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126225035") },
+  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126225035"), detail: true },
+  departments: { admin: true, load: () => import("./views/departments.js?v=20261126225035") },
+  employees: { admin: true, load: () => import("./views/employees.js?v=20261126225035") },
+  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126225035") },
+  trash: { admin: true, load: () => import("./views/trash.js?v=20261126225035") }
 };
 
 // إخفاء الأجزاء اللي المستخدم مالوش صلاحية عليها
@@ -65,9 +78,9 @@ async function show() {
 
 document.getElementById("langBtn").addEventListener("click", () => {
   toggleLang();
-  document.getElementById("roleBadge").textContent = t(isAdmin ? "role_admin" : "role_employee");
+  document.getElementById("roleBadge").textContent = preview ? t("previewing") : t(isAdmin ? "role_admin" : "role_employee");
   show();
 });
 window.addEventListener("hashchange", show);
 show();
-import("./search.js?v=20261126224610").then((m) => m.initSearch(session));
+import("./search.js?v=20261126225035").then((m) => m.initSearch(session));

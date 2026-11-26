@@ -1,7 +1,7 @@
-import { fs } from "../firebase.js?v=20261126224610";
-import { t } from "../i18n.js?v=20261126224610";
-import { col, session } from "../data.js?v=20261126224610";
-import { can } from "../perms.js?v=20261126224610";
+import { fs } from "../firebase.js?v=20261126225035";
+import { t } from "../i18n.js?v=20261126225035";
+import { col, session } from "../data.js?v=20261126225035";
+import { can } from "../perms.js?v=20261126225035";
 
 const card = (icon, cls, key, id) => `<div class="col-md-4"><div class="card stat-card p-3 d-flex flex-row align-items-center gap-3">
   <div class="stat-icon ${cls}"><i class="bi ${icon}"></i></div>

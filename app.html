@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=20261126224610">
+  <link rel="stylesheet" href="css/style.css?v=20261126225035">
   <title>أكاديميتي</title>
 </head>
 <body>
@@ -35,10 +35,16 @@
         <div class="search-wrap"><input id="searchBox" class="form-control search" data-i18n-ph="search_code" placeholder="ابحث بالكود أو الاسم..." autocomplete="off"><div id="searchResults" class="search-results d-none"></div></div>
         <div class="ms-auto d-flex align-items-center gap-2">
           <span class="text-muted small d-none d-md-inline"><span data-i18n="welcome">أهلاً</span>، <span id="userName"></span> <span id="roleBadge" class="badge text-bg-light"></span></span>
+          <button id="viewAsBtn" class="btn btn-light btn-sm d-none" data-i18n-title="view_as" title="عرض بعين قسم أو موظف"><i class="bi bi-eye"></i></button>
           <button id="langBtn" class="btn btn-light btn-sm" data-i18n="lang">English</button>
           <button id="logoutBtn" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">خروج</span></button>
         </div>
       </header>
+      <div id="previewBar" class="preview-bar d-none">
+        <i class="bi bi-eye-fill"></i> <span data-i18n="previewing_as">بتشوف السيستم بعين:</span> <b id="previewName"></b>
+        <span class="small opacity-75" data-i18n="preview_note">(معاينة بس — مفيش أي تعديل هيتحفظ)</span>
+        <button id="exitPreview" class="btn btn-sm btn-light ms-auto" data-i18n="exit_preview">خروج من المعاينة</button>
+      </div>
       <main class="content" id="viewRoot"></main>
     </div>
   </div>
@@ -61,6 +67,6 @@
   <div id="toastBox" class="toast-box"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="js/app.js?v=20261126224610"></script>
+  <script type="module" src="js/app.js?v=20261126225035"></script>
 </body>
 </html>

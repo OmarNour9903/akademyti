@@ -196,7 +196,16 @@ const dict = {
     instructor: "محاضر",
     no_results: "مفيش نتايج.",
     egp: "ج.م",
-    portal_soon: "بوابة الطلاب والمحاضرين هتتفعل في المرحلة 4."
+    portal_soon: "بوابة الطلاب والمحاضرين هتتفعل في المرحلة 4.",
+    view_as: "عرض بعين قسم أو موظف",
+    view_as_hint: "اختار قسم أو موظف، والسيستم هيظهرلك بالظبط زي ما بيظهرله: الأجزاء اللي بيشوفها والزراير اللي يقدر يستخدمها. المعاينة للقراءة بس.",
+    view_as_go: "اعرض",
+    employee: "موظف",
+    previewing: "معاينة",
+    previewing_as: "بتشوف السيستم بعين:",
+    preview_note: "(معاينة بس — مفيش أي تعديل هيتحفظ)",
+    exit_preview: "خروج من المعاينة",
+    preview_readonly: "إنت في وضع المعاينة. اخرج منه عشان تعدّل."
   },
   en: {
     brand: "Akademyti",
@@ -395,7 +404,16 @@ const dict = {
     instructor: "Instructor",
     no_results: "No results.",
     egp: "EGP",
-    portal_soon: "The student & instructor portal arrives in phase 4."
+    portal_soon: "The student & instructor portal arrives in phase 4.",
+    view_as: "View as department or employee",
+    view_as_hint: "Pick a department or employee and the system will look exactly as it does for them: the sections they see and the buttons they can use. Preview is read-only.",
+    view_as_go: "Show",
+    employee: "Employee",
+    previewing: "Preview",
+    previewing_as: "Viewing the system as:",
+    preview_note: "(preview only — nothing will be saved)",
+    exit_preview: "Exit preview",
+    preview_readonly: "You're in preview mode. Exit it to make changes."
   }
 };
 
@@ -416,6 +434,7 @@ export function applyI18n() {
       : "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css";
   }
   document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => { el.title = t(el.dataset.i18nTitle); });
   document.querySelectorAll("[data-i18n-ph]").forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
 }
 

@@ -1,11 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126232651";
-import { t, currentLang } from "./i18n.js?v=20261126232651";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126232651";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126232651";
-import { can, hasSpecial } from "./perms.js?v=20261126232651";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126232651";
-import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126232651";
+import { db, fs } from "./firebase.js?v=20261126232843";
+import { t, currentLang } from "./i18n.js?v=20261126232843";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261126232843";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126232843";
+import { can, hasSpecial } from "./perms.js?v=20261126232843";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261126232843";
+import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126232843";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -21,7 +21,12 @@ export function instState(i) {
 const instBadge = (s) => `<span class="badge inst-${s}">${t("inst_" + s)}</span>`;
 
 export function enrollmentTotals(e) {
-  const insts = e.status === "cancelled" ? [] : e.installments || [];
+  // الاشتراك الملغي: المطلوب = اللي اتدفع ناقص اللي اترد، ومفيش متبقي
+  if (e.status === "cancelled") {
+    const kept = round2((Number(e.paid) || 0) - (Number(e.refunded) || 0));
+    return { total: kept, paid: kept, remaining: 0, overdueCount: 0, overdueAmount: 0 };
+  }
+  const insts = e.installments || [];
   const overdue = insts.filter((i) => instState(i) === "overdue");
   return {
     total: Number(e.finalPrice) || 0, paid: Number(e.paid) || 0,
@@ -248,7 +253,7 @@ export async function studentEnrollments(box, student, reload) {
     ${can(S, "enrollments", "add") ? `<button class="btn btn-sm btn-brand ms-auto" id="enrollBtn"><i class="bi bi-plus-lg"></i> ${t("new_enrollment")}</button>` : ""}</div>`;
   if (!list.length) { box.innerHTML = head + `<p class="text-muted small mb-0">${t("no_enrollments")}</p>`; }
   else {
-    const all = list.filter((e) => e.status !== "cancelled").reduce((a, e) => { const x = enrollmentTotals(e); a.total += x.total; a.paid += x.paid; a.rem += x.remaining; a.od += x.overdueCount; return a; }, { total: 0, paid: 0, rem: 0, od: 0 });
+    const all = list.reduce((a, e) => { const x = enrollmentTotals(e); a.total += x.total; a.paid += x.paid; a.rem += x.remaining; a.od += x.overdueCount; return a; }, { total: 0, paid: 0, rem: 0, od: 0 });
     box.innerHTML = head + (all.od ? `<div class="alert alert-danger py-2"><i class="bi bi-exclamation-triangle"></i> ${t("overdue_warning")} (${all.od})</div>` : "") +
       list.map((e) => `<div class="enroll-card">
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">

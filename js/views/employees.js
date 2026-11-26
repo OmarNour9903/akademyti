@@ -1,8 +1,8 @@
-import { db, fs, createAccount } from "../firebase.js?v=20261126232651";
-import { t } from "../i18n.js?v=20261126232651";
-import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126232651";
-import { col, ref, userRef, audit, listActive, nextEntityCode, softDelete, session } from "../data.js?v=20261126232651";
-import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126232651";
+import { db, fs, createAccount } from "../firebase.js?v=20261126232843";
+import { t } from "../i18n.js?v=20261126232843";
+import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126232843";
+import { col, ref, userRef, audit, listActive, nextEntityCode, softDelete, session } from "../data.js?v=20261126232843";
+import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126232843";
 
 let depts = [];
 

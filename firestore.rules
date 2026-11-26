@@ -67,6 +67,60 @@ service cloud.firestore {
       }
 
       // باقي الأجزاء: حسب الصلاحيات. المسح = نقل للسلة ومحتاج صلاحية "يمسح"، والمسح النهائي للمدير بس
+      // ===== الماليات =====
+      function near(a, b) { return math.abs(a - b) < 0.01; }
+      function paymentPath(pid) { return /databases/$(database)/documents/tenants/$(t)/payments/$(pid); }
+      function groupPath(gid) { return /databases/$(database)/documents/tenants/$(t)/groups/$(gid); }
+
+      match /enrollments/{id} {
+        allow read: if can(t, 'enrollments', 'view') || can(t, 'payments', 'add');
+        // اشتراك جديد: السعر من المجموعة، والخصم بصلاحية وسبب، وعدد المسجلين يزيد واحد
+        allow create: if can(t, 'enrollments', 'add')
+          && request.resource.data.paid == 0
+          && request.resource.data.discount >= 0
+          && near(request.resource.data.finalPrice, request.resource.data.originalPrice - request.resource.data.discount)
+          && request.resource.data.originalPrice == get(groupPath(request.resource.data.groupId)).data.price
+          && (request.resource.data.discount == 0 || (hasSpecial(t, 'discount') && request.resource.data.discountReason.size() > 0))
+          && getAfter(groupPath(request.resource.data.groupId)).data.enrolledCount == get(groupPath(request.resource.data.groupId)).data.enrolledCount + 1;
+        allow update: if
+          // تسجيل دفعة: المدفوع يزيد بنفس مبلغ الدفعة الجديدة بالظبط
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paid', 'installments', 'lastPaymentId', 'updatedAt'])
+            && can(t, 'payments', 'add')
+            && !exists(paymentPath(request.resource.data.lastPaymentId))
+            && getAfter(paymentPath(request.resource.data.lastPaymentId)).data.enrollmentId == id
+            && near(request.resource.data.paid - resource.data.paid, getAfter(paymentPath(request.resource.data.lastPaymentId)).data.amount))
+          // تعديل عادي: من غير ما يلمس الفلوس
+          || (!deletedChanged() && can(t, 'enrollments', 'edit')
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paid', 'finalPrice', 'originalPrice', 'discount', 'discountReason', 'lastPaymentId', 'studentId', 'groupId']))
+          // مسح لسلة المهملات: لو مفيش فلوس اتدفعت بس
+          || (deletedChanged() && can(t, 'enrollments', 'delete') && resource.data.paid == 0);
+        allow delete: if false;
+      }
+
+      // الدفعات: إضافة بس، محدش يعدّلها أو يمسحها (التصحيح بحركة عكسية)
+      match /payments/{id} {
+        allow read: if can(t, 'payments', 'view');
+        allow create: if can(t, 'payments', 'add')
+          && request.resource.data.amount > 0
+          && request.resource.data.receivedByUid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/tenants/$(t)/enrollments/$(request.resource.data.enrollmentId)).data.lastPaymentId == id
+          && getAfter(/databases/$(database)/documents/tenants/$(t)/treasuries/$(request.resource.data.treasuryId)).data.lastTxId == id;
+        allow update, delete: if false;
+      }
+
+      // الخزن: المدير بيضيفها، والرصيد بيتغير بس بحركة مسجلة
+      match /treasuries/{id} {
+        allow read: if can(t, 'payments', 'add') || can(t, 'payments', 'view');
+        allow create: if isTenantAdmin(t) && request.resource.data.balance == 0;
+        allow update: if
+          (isTenantAdmin(t) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['balance', 'lastTxId']))
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance', 'lastTxId'])
+            && can(t, 'payments', 'add')
+            && !exists(paymentPath(request.resource.data.lastTxId))
+            && near(request.resource.data.balance - resource.data.balance, getAfter(paymentPath(request.resource.data.lastTxId)).data.amount));
+        allow delete: if false;
+      }
+
       // تغيير السعر محتاج صلاحية "تعديل الأسعار"
       function priceChangeOk(t, coll) {
         return !(coll in ['courses', 'groups']) || request.resource.data.get('price', null) == resource.data.get('price', null) || hasSpecial(t, 'changePrice');
@@ -75,13 +129,21 @@ service cloud.firestore {
         return coll != 'groups' || hasSpecial(t, 'changePrice')
           || request.resource.data.price == get(/databases/$(database)/documents/tenants/$(t)/courses/$(request.resource.data.courseId)).data.price;
       }
+      // زيادة عدد المسجلين في مجموعة مع الاشتراك (بحد العدد الأقصى)
+      function enrollCountOk(t, coll) {
+        return coll == 'groups'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['enrolledCount'])
+          && can(t, 'enrollments', 'add')
+          && request.resource.data.enrolledCount == resource.data.enrolledCount + 1
+          && (request.resource.data.enrolledCount <= resource.data.capacity || hasSpecial(t, 'overrideCapacity'));
+      }
 
       match /{coll}/{id} {
-        allow read: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && can(t, coll, 'view');
-        allow create: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && can(t, coll, 'add') && groupCreatePriceOk(t, coll);
-        allow update: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings'])
-          && ((!deletedChanged() && can(t, coll, 'edit') && priceChangeOk(t, coll)) || (deletedChanged() && can(t, coll, 'delete')));
-        allow delete: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && isTenantAdmin(t);
+        allow read: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries']) && can(t, coll, 'view');
+        allow create: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries']) && can(t, coll, 'add') && groupCreatePriceOk(t, coll);
+        allow update: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries'])
+          && ((!deletedChanged() && can(t, coll, 'edit') && priceChangeOk(t, coll)) || (deletedChanged() && can(t, coll, 'delete')) || enrollCountOk(t, coll));
+        allow delete: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries']) && isTenantAdmin(t);
       }
     }
   }

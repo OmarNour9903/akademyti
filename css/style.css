@@ -68,3 +68,19 @@ body { font-family: "Cairo", system-ui, sans-serif; background: var(--bg-soft); 
 /* معاينة بعين قسم/موظف */
 .preview-bar { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; background: #f59e0b; color: #1f1300; padding: .6rem 1.5rem; font-size: .95rem; }
 .preview-bar.d-none { display: none !important; }
+
+/* الماليات */
+.totals-bar { display: flex; flex-wrap: wrap; gap: .5rem 2rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: .6rem; padding: .6rem 1rem; font-size: .95rem; }
+.totals-bar.grand { background: #eef2ff; border-color: #c7d2fe; font-size: 1.05rem; }
+.enroll-card { border: 1px solid #e5e7eb; border-radius: .8rem; padding: 1rem; margin-bottom: 1rem; }
+.badge.inst-paid { background: #dcfce7; color: #166534; }
+.badge.inst-partial { background: #e0f2fe; color: #075985; }
+.badge.inst-due { background: #f3f4f6; color: #374151; }
+.badge.inst-overdue { background: #fee2e2; color: #991b1b; }
+.print-area { display: none; }
+.receipt { max-width: 700px; margin: 0 auto; padding: 2rem; }
+@media print {
+  body > *:not(.print-area) { display: none !important; }
+  .print-area { display: block !important; }
+}
+.stat-icon.c4 { background: #fee2e2; color: #dc2626; }

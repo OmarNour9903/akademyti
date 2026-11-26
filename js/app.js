@@ -1,9 +1,9 @@
-import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126225437";
-import { requireSession, logout } from "./session.js?v=20261126225437";
-import { setSession } from "./data.js?v=20261126225437";
-import { can } from "./perms.js?v=20261126225437";
-import { applyPreview, openPicker, exitPreview } from "./viewas.js?v=20261126225437";
-import { setPreviewMode, toast } from "./util.js?v=20261126225437";
+import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126230052";
+import { requireSession, logout } from "./session.js?v=20261126230052";
+import { setSession } from "./data.js?v=20261126230052";
+import { can } from "./perms.js?v=20261126230052";
+import { applyPreview, openPicker, exitPreview } from "./viewas.js?v=20261126230052";
+import { setPreviewMode, toast } from "./util.js?v=20261126230052";
 
 applyI18n();
 document.getElementById("logoutBtn").addEventListener("click", logout);
@@ -30,24 +30,26 @@ document.getElementById("userName").textContent = session.profile.name;
 document.getElementById("roleBadge").textContent = preview ? t("previewing") : t(isAdmin ? "role_admin" : "role_employee");
 
 const views = {
-  dashboard: { load: () => import("./views/dashboard.js?v=20261126225437") },
-  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126225437") },
-  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126225437"), detail: true },
-  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126225437") },
-  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126225437"), detail: true },
-  students: { perm: "students", load: () => import("./views/students.js?v=20261126225437") },
-  student: { perm: "students", load: () => import("./views/students.js?v=20261126225437"), detail: true },
-  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126225437") },
-  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126225437"), detail: true },
-  departments: { admin: true, load: () => import("./views/departments.js?v=20261126225437") },
-  employees: { admin: true, load: () => import("./views/employees.js?v=20261126225437") },
-  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126225437") },
-  trash: { admin: true, load: () => import("./views/trash.js?v=20261126225437") }
+  dashboard: { load: () => import("./views/dashboard.js?v=20261126230052") },
+  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126230052") },
+  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126230052"), detail: true },
+  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126230052") },
+  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126230052"), detail: true },
+  students: { perm: "students", load: () => import("./views/students.js?v=20261126230052") },
+  student: { perm: "students", load: () => import("./views/students.js?v=20261126230052"), detail: true },
+  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126230052") },
+  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126230052"), detail: true },
+  departments: { admin: true, load: () => import("./views/departments.js?v=20261126230052") },
+  employees: { admin: true, load: () => import("./views/employees.js?v=20261126230052") },
+  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126230052") },
+  finance: { load: () => import("./views/finance.js?v=20261126230052") },
+  trash: { admin: true, load: () => import("./views/trash.js?v=20261126230052") }
 };
 
 // إخفاء الأجزاء اللي المستخدم مالوش صلاحية عليها
 document.querySelectorAll("#sideNav [data-admin]").forEach((a) => a.classList.toggle("d-none", !isAdmin));
 document.querySelectorAll("#sideNav [data-perm]").forEach((a) => a.classList.toggle("d-none", !can(session, a.dataset.perm)));
+document.querySelectorAll("#sideNav [data-perm-any]").forEach((a) => a.classList.toggle("d-none", !a.dataset.permAny.split(",").some((m) => can(session, m))));
 document.querySelectorAll("#sideNav .nav-section").forEach((s) => {
   const any = [...document.querySelectorAll("#sideNav [data-admin], #sideNav [data-perm='auditLog']")].some((a) => !a.classList.contains("d-none"));
   s.classList.toggle("d-none", !any);
@@ -85,4 +87,4 @@ document.getElementById("langBtn").addEventListener("click", () => {
 });
 window.addEventListener("hashchange", show);
 show();
-import("./search.js?v=20261126225437").then((m) => m.initSearch(session));
+import("./search.js?v=20261126230052").then((m) => m.initSearch(session));

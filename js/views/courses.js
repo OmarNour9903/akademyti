@@ -1,10 +1,10 @@
-import { fs } from "../firebase.js?v=20261126225437";
-import { t } from "../i18n.js?v=20261126225437";
-import { esc } from "../util.js?v=20261126225437";
-import { col, session } from "../data.js?v=20261126225437";
-import { can, hasSpecial } from "../perms.js?v=20261126225437";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126225437";
-import { groupsTable } from "./groups.js?v=20261126225437";
+import { fs } from "../firebase.js?v=20261126230052";
+import { t } from "../i18n.js?v=20261126230052";
+import { esc } from "../util.js?v=20261126230052";
+import { col, session } from "../data.js?v=20261126230052";
+import { can, hasSpecial } from "../perms.js?v=20261126230052";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126230052";
+import { groupsTable } from "./groups.js?v=20261126230052";
 
 const statuses = ["available", "paused", "archived"];
 
@@ -57,11 +57,11 @@ export async function renderDetail(root, id) {
         <div id="groupsBox"></div>
       </div></div>
       <div class="col-12"><div class="card card-soft p-4">
-        <h2 class="h6 fw-bold mb-2">${t("course_students")}</h2>
-        <p class="text-muted small mb-0">${t("after_finance_phase")}</p>
+        <h2 class="h6 fw-bold mb-3">${t("course_students")}</h2><div id="stuBox"></div>
       </div></div>
     </div>`;
   if (root.querySelector("#editBtn")) root.querySelector("#editBtn").addEventListener("click", () => view.openForm(c, () => renderDetail(root, id)));
+  import("../enroll.js?v=20261126230052").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "courseId", id));
   if (!can(S, "groups", "view")) { root.querySelector("#groupsBox").innerHTML = `<p class="text-muted small">${t("no_permission")}</p>`; root.querySelector("#instList").textContent = t("no_permission"); return; }
   const snap = await fs.getDocs(fs.query(col("groups"), fs.where("courseId", "==", id)));
   const groups = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((g) => !g.deleted);

@@ -14,7 +14,7 @@
 | `app.html` | مدير الأكاديمية والموظفين |
 
 ## قبل كل commit
-شغّل `python3 tools/bump-version.py` عشان المتصفحات تاخد النسخة الجديدة ومتفضلش على الكاش.
+شغّل `python3 tools/bump-version.py` و `node tools/check-imports.js` عشان المتصفحات تاخد النسخة الجديدة ومتفضلش على الكاش.
 
 ## نشر قواعد Firestore
 القواعد في `firestore.rules`. تتنشر من Firebase Console ← Firestore ← Rules، أو بـ `firebase deploy --only firestore:rules`.

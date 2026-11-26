@@ -1,9 +1,9 @@
-import { fs } from "../firebase.js?v=20261126225437";
-import { t } from "../i18n.js?v=20261126225437";
-import { esc, UserError } from "../util.js?v=20261126225437";
-import { col, session, nextNumber } from "../data.js?v=20261126225437";
-import { can, hasSpecial } from "../perms.js?v=20261126225437";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126225437";
+import { fs } from "../firebase.js?v=20261126230052";
+import { t } from "../i18n.js?v=20261126230052";
+import { esc, UserError } from "../util.js?v=20261126230052";
+import { col, session, nextNumber } from "../data.js?v=20261126230052";
+import { can, hasSpecial } from "../perms.js?v=20261126230052";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126230052";
 
 const statuses = ["open", "running", "finished", "cancelled", "archived"];
 let cache = { courses: [], instructors: [] };
@@ -100,9 +100,9 @@ export async function renderDetail(root, id) {
       <div class="col-lg-6"><div class="card card-soft p-4 h-100">
         <h2 class="h6 fw-bold mb-3">${t("instructors")}</h2>
         ${(g.instructorIds || []).length ? g.instructorIds.map((iid, i) => `<a href="#instructor/${iid}" class="badge text-bg-light text-decoration-none fs-6 fw-normal me-1 mb-1">${esc((g.instructorNames || [])[i] || iid)}</a>`).join("") : `<span class="text-muted small">${t("no_data")}</span>`}
-        <h2 class="h6 fw-bold mt-4 mb-2">${t("group_students")}</h2>
-        <p class="text-muted small mb-0">${t("after_finance_phase")}</p>
       </div></div>
+      <div class="col-12"><div class="card card-soft p-4"><h2 class="h6 fw-bold mb-3">${t("group_students")}</h2><div id="stuBox"></div></div></div>
     </div>`;
+  import("../enroll.js?v=20261126230052").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
   if (root.querySelector("#editBtn")) root.querySelector("#editBtn").addEventListener("click", () => view.openForm(g, () => renderDetail(root, id)));
 }

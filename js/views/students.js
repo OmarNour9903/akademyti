@@ -1,9 +1,10 @@
-import { t } from "../i18n.js?v=20261126225437";
-import { esc, toast } from "../util.js?v=20261126225437";
-import { session } from "../data.js?v=20261126225437";
-import { can, hasSpecial } from "../perms.js?v=20261126225437";
-import { crudView, statusBadge, infoGrid, getOne } from "../crud.js?v=20261126225437";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126225437";
+import { t } from "../i18n.js?v=20261126230052";
+import { esc, toast } from "../util.js?v=20261126230052";
+import { session } from "../data.js?v=20261126230052";
+import { can, hasSpecial } from "../perms.js?v=20261126230052";
+import { crudView, statusBadge, infoGrid, getOne } from "../crud.js?v=20261126230052";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126230052";
+import { studentEnrollments, studentPayments } from "../enroll.js?v=20261126230052";
 
 const statuses = ["active", "suspended", "archived"];
 
@@ -51,7 +52,7 @@ export async function renderDetail(root, id) {
   const S = session();
   const s = await getOne("students", id);
   if (!s || s.deleted) { root.innerHTML = `<div class="alert alert-warning">${t("not_found")}</div>`; return; }
-  const soon = (title) => `<div class="col-md-6"><div class="card card-soft p-4 h-100"><h2 class="h6 fw-bold mb-2">${t(title)}</h2><p class="text-muted small mb-0">${t("after_finance_phase")}</p></div></div>`;
+  const soon = (title) => `<div class="col-md-6"><div class="card card-soft p-4 h-100"><h2 class="h6 fw-bold mb-2">${t(title)}</h2><p class="text-muted small mb-0">${t("after_phase3")}</p></div></div>`;
   const accountBox = s.uid
     ? `<span class="badge text-bg-success">${t("has_portal")}</span> ${hasSpecial(S, "resetPassword") && s.email ? `<button id="resetBtn" class="btn btn-sm btn-outline-primary ms-2">${t("send_reset")}</button>` : ""}`
     : `<span class="badge text-bg-light">${t("no_portal")}</span> ${can(S, "students", "add") ? `<button id="loginBtn" class="btn btn-sm btn-outline-primary ms-2">${t("create_portal")}</button>` : ""}`;
@@ -70,10 +71,12 @@ export async function renderDetail(root, id) {
         </div>
         ${s.notes ? `<hr><h2 class="h6 fw-bold">${t("notes")}</h2><p class="mb-0 pre-line">${esc(s.notes)}</p>` : ""}
       </div></div>
-      ${soon("student_courses")}${soon("payments_history")}${soon("attendance_evaluation")}${soon("discipline_log")}
+      <div class="col-12"><div class="card card-soft p-4" id="enrollBox"><div class="spinner-border spinner-border-sm"></div></div></div>
+      <div class="col-12"><div class="card card-soft p-4"><h2 class="h6 fw-bold mb-3">${t("payments_history")}</h2><div id="payBox"></div></div></div>
+      ${soon("attendance_evaluation")}${soon("discipline_log")}
     </div>`;
   const reload = () => renderDetail(root, id);
   root.querySelector("#editBtn")?.addEventListener("click", () => view.openForm(s, reload));
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(s.email); toast(t("reset_sent_to") + " " + s.email); });
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126225437").then((m) => m.openCreateLogin("students", "student", s, reload)));
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126230052").then((m) => m.openCreateLogin("students", "student", s, reload)));
 }

@@ -1,6 +1,6 @@
-import { auth, authMod } from "./firebase.js?v=20261126225437";
-import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126225437";
-import { loadSession, homeFor } from "./session.js?v=20261126225437";
+import { auth, authMod } from "./firebase.js?v=20261126230052";
+import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126230052";
+import { loadSession, homeFor } from "./session.js?v=20261126230052";
 
 applyI18n();
 let lastAlert = null;

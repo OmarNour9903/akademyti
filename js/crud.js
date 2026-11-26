@@ -1,9 +1,9 @@
 // محرك عام لصفحات القوايم والفورمز (كورسات، طلاب، محاضرين، مجموعات)
-import { db, fs } from "./firebase.js?v=20261126230710";
-import { t } from "./i18n.js?v=20261126230710";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126230710";
-import { col, ref, audit, nextCode, softDelete, session } from "./data.js?v=20261126230710";
-import { can } from "./perms.js?v=20261126230710";
+import { db, fs } from "./firebase.js?v=20261126231907";
+import { t } from "./i18n.js?v=20261126231907";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126231907";
+import { col, ref, audit, nextEntityCode, softDelete, session } from "./data.js?v=20261126231907";
+import { can } from "./perms.js?v=20261126231907";
 
 export const STATUS_BADGE = {
   active: "text-bg-success", available: "text-bg-success", open: "text-bg-success", running: "text-bg-primary",
@@ -111,7 +111,7 @@ export function crudView(cfg) {
       let data = readFields(form, fields);
       if (cfg.prepare) data = (await cfg.prepare(data, existing, form)) || data;
       if (!existing) {
-        const code = cfg.makeCode ? await cfg.makeCode(data) : await nextCode(cfg.codeEntity || cfg.coll, cfg.codePrefix, cfg.codePad || 4);
+        const code = cfg.makeCode ? await cfg.makeCode(data) : await nextEntityCode(cfg.codeEntity || cfg.coll);
         const r = fs.doc(col(cfg.coll));
         const extra = cfg.beforeCreate ? (await cfg.beforeCreate({ ...data, code }, form, r.id)) || {} : {};
         const doc = { ...data, ...extra, code, deleted: false, createdAt: fs.serverTimestamp(), createdBy: session().profile.name || "" };

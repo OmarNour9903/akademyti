@@ -1,4 +1,4 @@
-import { db, fs } from "./firebase.js?v=20261126230710";
+import { db, fs } from "./firebase.js?v=20261126231907";
 
 let S;
 export const setSession = (s) => { S = s; };
@@ -16,6 +16,28 @@ export async function nextNumber(entity) {
     tx.set(r, { n: next });
     return next;
   });
+}
+
+// صيغة الأكواد (المدير بيغيّرها من الإعدادات)
+export const DEFAULT_CODES = {
+  students: { prefix: "STD", sep: "-", digits: 5 },
+  courses: { prefix: "CRS", sep: "-", digits: 4 },
+  instructors: { prefix: "INS", sep: "-", digits: 4 },
+  employees: { prefix: "EMP", sep: "-", digits: 4 },
+  groups: { prefix: "G", sep: "-", digits: 2 }
+};
+let codeCfg = null;
+export const resetCodeCache = () => { codeCfg = null; };
+export async function codeFormat(entity) {
+  if (!codeCfg) {
+    try { const s = await fs.getDoc(ref("settings", "codes")); codeCfg = s.exists() ? s.data() : {}; } catch (e) { codeCfg = {}; }
+  }
+  return { ...DEFAULT_CODES[entity], ...(codeCfg[entity] || {}) };
+}
+export const formatCode = (f, n) => `${f.prefix}${f.sep}${String(n).padStart(Number(f.digits) || 1, "0")}`;
+export async function nextEntityCode(entity) {
+  const f = await codeFormat(entity);
+  return formatCode(f, await nextNumber(entity));
 }
 
 // كود فريد متسلسل لكل نوع (STD-00001 ...)

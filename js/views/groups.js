@@ -1,9 +1,9 @@
-import { fs } from "../firebase.js?v=20261126230710";
-import { t } from "../i18n.js?v=20261126230710";
-import { esc, UserError } from "../util.js?v=20261126230710";
-import { col, session, nextNumber } from "../data.js?v=20261126230710";
-import { can, hasSpecial } from "../perms.js?v=20261126230710";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126230710";
+import { fs } from "../firebase.js?v=20261126231907";
+import { t } from "../i18n.js?v=20261126231907";
+import { esc, UserError } from "../util.js?v=20261126231907";
+import { col, session, nextNumber, codeFormat } from "../data.js?v=20261126231907";
+import { can, hasSpecial } from "../perms.js?v=20261126231907";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126231907";
 
 const statuses = ["open", "running", "finished", "cancelled", "archived"];
 let cache = { courses: [], instructors: [] };
@@ -35,7 +35,8 @@ export const view = crudView({
   makeCode: async (data) => {
     const course = cache.courses.find((c) => c.id === data.courseId);
     const n = await nextNumber(`groups_${data.courseId}`);
-    return `${course.code}-G${String(n).padStart(2, "0")}`;
+    const f = await codeFormat("groups");
+    return `${course.code}${f.sep}${f.prefix}${String(n).padStart(Number(f.digits) || 1, "0")}`;
   },
   fields: async (existing) => {
     await loadRefs();
@@ -103,6 +104,6 @@ export async function renderDetail(root, id) {
       </div></div>
       <div class="col-12"><div class="card card-soft p-4"><h2 class="h6 fw-bold mb-3">${t("group_students")}</h2><div id="stuBox"></div></div></div>
     </div>`;
-  import("../enroll.js?v=20261126230710").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
+  import("../enroll.js?v=20261126231907").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
   if (root.querySelector("#editBtn")) root.querySelector("#editBtn").addEventListener("click", () => view.openForm(g, () => renderDetail(root, id)));
 }

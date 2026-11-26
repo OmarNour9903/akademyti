@@ -1,8 +1,8 @@
-import { db, fs, createAccount } from "../firebase.js?v=20261126230710";
-import { t } from "../i18n.js?v=20261126230710";
-import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126230710";
-import { col, ref, userRef, audit, listActive, nextCode, softDelete, session } from "../data.js?v=20261126230710";
-import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126230710";
+import { db, fs, createAccount } from "../firebase.js?v=20261126231907";
+import { t } from "../i18n.js?v=20261126231907";
+import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126231907";
+import { col, ref, userRef, audit, listActive, nextEntityCode, softDelete, session } from "../data.js?v=20261126231907";
+import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126231907";
 
 let depts = [];
 
@@ -82,7 +82,7 @@ function openCreate(done) {
       if (e.code === "auth/invalid-email") throw new UserError("err_invalid_email");
       throw e;
     }
-    const code = await nextCode("employees", "EMP");
+    const code = await nextEntityCode("employees");
     const S = session();
     const dept = depts.find((d) => d.id === departmentId);
     const eff = effective(dept);

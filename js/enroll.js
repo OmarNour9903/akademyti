@@ -1,10 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126230710";
-import { t, currentLang } from "./i18n.js?v=20261126230710";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126230710";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126230710";
-import { can, hasSpecial } from "./perms.js?v=20261126230710";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126230710";
+import { db, fs } from "./firebase.js?v=20261126231907";
+import { t, currentLang } from "./i18n.js?v=20261126231907";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261126231907";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126231907";
+import { can, hasSpecial } from "./perms.js?v=20261126231907";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261126231907";
+import { myTreasuries, recordTx, balRef } from "./money.js?v=20261126231907";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -157,9 +158,8 @@ export function installmentsTable(e, { selectable = false } = {}) {
 // ===== تسجيل دفعة =====
 export async function openPayment(e, done) {
   const S = session();
-  const tSnap = await fs.getDocs(col("treasuries"));
-  const treasuries = tSnap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.deleted);
-  if (!treasuries.length) { toast(t("no_treasuries"), "warning"); return; }
+  const treasuries = await myTreasuries("deposit");
+  if (!treasuries.length) { toast(t("no_deposit_treasury"), "warning"); return; }
   const methods = ["cash", "transfer", "vodafone", "instapay"];
   const html = `
     <p class="mb-2"><b>${esc(e.studentCode)} ${esc(e.studentName)}</b> — ${esc(e.groupCode)} ${esc(e.courseName)}</p>
@@ -203,7 +203,7 @@ export async function openPayment(e, done) {
       };
       tx.set(pRef, receipt);
       tx.update(eRef, { paid, installments: insts, lastPaymentId: pRef.id, updatedAt: fs.serverTimestamp() });
-      tx.update(ref("treasuries", treasury.id), { balance: fs.increment(amount), lastTxId: pRef.id });
+      tx.update(balRef(treasury.id), { balance: fs.increment(amount), lastTxId: pRef.id, lastTxColl: "payments" });
     });
     await audit("create", "payments", pRef.id, `${code} — ${e.studentCode} — ${amount}`, null, { amount, instNo, treasury: treasury.name });
     toast(`${t("saved")} — ${code}`);
@@ -247,20 +247,28 @@ export async function studentEnrollments(box, student, reload) {
     ${can(S, "enrollments", "add") ? `<button class="btn btn-sm btn-brand ms-auto" id="enrollBtn"><i class="bi bi-plus-lg"></i> ${t("new_enrollment")}</button>` : ""}</div>`;
   if (!list.length) { box.innerHTML = head + `<p class="text-muted small mb-0">${t("no_enrollments")}</p>`; }
   else {
-    const all = list.reduce((a, e) => { const x = enrollmentTotals(e); a.total += x.total; a.paid += x.paid; a.rem += x.remaining; a.od += x.overdueCount; return a; }, { total: 0, paid: 0, rem: 0, od: 0 });
+    const all = list.filter((e) => e.status !== "cancelled").reduce((a, e) => { const x = enrollmentTotals(e); a.total += x.total; a.paid += x.paid; a.rem += x.remaining; a.od += x.overdueCount; return a; }, { total: 0, paid: 0, rem: 0, od: 0 });
     box.innerHTML = head + (all.od ? `<div class="alert alert-danger py-2"><i class="bi bi-exclamation-triangle"></i> ${t("overdue_warning")} (${all.od})</div>` : "") +
       list.map((e) => `<div class="enroll-card">
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
           <a href="#group/${e.groupId}" class="badge text-bg-light font-monospace text-decoration-none">${esc(e.groupCode)}</a>
           <span class="fw-semibold">${esc(e.courseName)}</span> ${statusBadge(e.status)}
           ${e.discount ? `<span class="badge text-bg-info" title="${esc(e.discountReason)}">${t("discount")}: ${fmtMoney(e.discount)}</span>` : ""}
-          ${can(S, "payments", "add") && enrollmentTotals(e).remaining > 0 ? `<button class="btn btn-sm btn-success ms-auto" data-pay="${e.id}"><i class="bi bi-cash"></i> ${t("record_payment")}</button>` : ""}
+          <span class="ms-auto d-flex gap-1">
+          ${e.status === "active" && can(S, "payments", "add") && enrollmentTotals(e).remaining > 0 ? `<button class="btn btn-sm btn-success" data-pay="${e.id}"><i class="bi bi-cash"></i> ${t("record_payment")}</button>` : ""}
+          ${e.status === "active" && hasSpecial(S, "transferStudent") ? `<button class="btn btn-sm btn-outline-primary" data-transfer="${e.id}" title="${t("transfer_student")}"><i class="bi bi-arrow-left-right"></i></button>` : ""}
+          ${e.status === "active" && (hasSpecial(S, "refund") || can(S, "enrollments", "edit")) ? `<button class="btn btn-sm btn-outline-danger" data-cancel="${e.id}" title="${t("cancel_enrollment")}"><i class="bi bi-x-circle"></i></button>` : ""}
+          </span>
         </div>
+        ${e.status === "cancelled" ? `<p class="small text-danger mb-2">${t("cancel_reason")}: ${esc(e.cancelReason)} — ${esc(e.cancelledBy)}${e.refunded ? ` — ${t("refunded")}: ${fmtMoney(e.refunded)}` : ""}</p>` : ""}
+        ${(e.transfers || []).map((x) => `<p class="small text-primary mb-1"><i class="bi bi-arrow-left-right"></i> ${esc(x.from)} → ${esc(x.to)}: ${esc(x.reason)} — ${esc(x.by)} (${esc(x.at)})</p>`).join("")}
         ${e.discount ? `<p class="small text-muted mb-2">${t("discount_reason")}: ${esc(e.discountReason)} — ${esc(e.discountBy)}</p>` : ""}
         ${installmentsTable(e)}
       </div>`).join("") +
       `<div class="totals-bar grand mt-3"><span>${t("grand_required")}: <b>${fmtMoney(all.total)}</b></span><span>${t("grand_collected")}: <b class="text-success">${fmtMoney(all.paid)}</b></span><span>${t("grand_remaining")}: <b class="${all.rem > 0 ? "text-danger" : ""}">${fmtMoney(all.rem)}</b></span></div>`;
     box.querySelectorAll("[data-pay]").forEach((b) => b.addEventListener("click", () => openPayment(list.find((e) => e.id === b.dataset.pay), reload)));
+    box.querySelectorAll("[data-cancel]").forEach((b) => b.addEventListener("click", () => openCancel(list.find((e) => e.id === b.dataset.cancel), reload)));
+    box.querySelectorAll("[data-transfer]").forEach((b) => b.addEventListener("click", () => openTransfer(list.find((e) => e.id === b.dataset.transfer), reload)));
   }
   box.querySelector("#enrollBtn")?.addEventListener("click", () => openEnroll(student, reload));
 }
@@ -271,7 +279,7 @@ export async function studentPayments(box, student) {
   const snap = await fs.getDocs(fs.query(col("payments"), fs.where("studentId", "==", student.id)));
   const list = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.code || "").localeCompare(a.code || ""));
   box.innerHTML = list.length ? paymentsTable(list, false) : `<p class="text-muted small mb-0">${t("no_payments")}</p>`;
-  bindReprint(box, list);
+  bindReprint(box, list, () => location.reload());
 }
 
 export function paymentsTable(list, withStudent = true) {
@@ -282,11 +290,130 @@ export function paymentsTable(list, withStudent = true) {
       ${withStudent ? `<td><a href="#student/${p.studentId}">${esc(p.studentCode)} ${esc(p.studentName)}</a></td>` : ""}
       <td class="small">${esc(p.groupCode)}</td><td>#${esc(p.installmentNo)}</td><td class="fw-semibold text-success">${fmtMoney(p.amount)}</td>
       <td class="small">${t("m_" + p.method)}</td><td class="small">${esc(p.treasuryName)}</td><td class="small">${esc(p.receivedBy)}</td>
-      <td><button class="btn btn-sm btn-outline-secondary" data-print="${p.id}" title="${t("print")}"><i class="bi bi-printer"></i></button></td></tr>`).join("")}</tbody></table></div>`;
+      <td class="text-nowrap">${p.reversedBy ? `<span class="badge text-bg-danger">${t("reversed")}</span>` : `<button class="btn btn-sm btn-outline-secondary" data-print="${p.id}" title="${t("print")}"><i class="bi bi-printer"></i></button>
+        ${session().role === "admin" ? `<button class="btn btn-sm btn-outline-danger" data-reverse="${p.id}" title="${t("reverse")}"><i class="bi bi-arrow-counterclockwise"></i></button>` : ""}`}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
-export function bindReprint(box, list) {
+export function bindReprint(box, list, reload) {
   box.querySelectorAll("[data-print]").forEach((b) => b.addEventListener("click", () => printReceipt(list.find((p) => p.id === b.dataset.print))));
+  box.querySelectorAll("[data-reverse]").forEach((b) => b.addEventListener("click", () => reversePayment(list.find((p) => p.id === b.dataset.reverse), reload || (() => location.reload()))));
+}
+
+// ===== حركة عكسية لدفعة (المدير بس) =====
+export function reversePayment(p, done) {
+  const html = `<p>${t("reverse_payment_note")}</p>
+    <p class="mb-2"><b>${esc(p.code)}</b> — ${esc(p.studentCode)} ${esc(p.studentName)} — <b>${fmtMoney(p.amount)}</b> (${t("installment")} #${esc(p.installmentNo)})</p>
+    <label class="form-label">${t("reverse_reason")} <span class="text-danger">*</span></label><input name="reason" class="form-control" required>`;
+  openModal(t("reverse_payment"), html, async (form) => {
+    const reason = form.reason.value.trim();
+    if (!reason) throw new UserError("required");
+    const eRef = ref("enrollments", p.enrollmentId);
+    let cur;
+    await recordTx({ type: "reversal", amount: p.amount, treasuryId: p.treasuryId, treasuryName: p.treasuryName, deltas: { [p.treasuryId]: -p.amount },
+      reason, date: today(), paymentId: p.id, enrollmentId: p.enrollmentId, studentId: p.studentId, studentCode: p.studentCode, studentName: p.studentName, groupId: p.groupId },
+    {
+      read: async (tx) => { cur = (await tx.get(eRef)).data(); },
+      write: (tx, txId) => {
+        const insts = (cur.installments || []).map((i) => ({ ...i }));
+        const inst = insts.find((i) => i.no === p.installmentNo);
+        if (inst) inst.paid = Math.max(0, round2((inst.paid || 0) - p.amount));
+        tx.update(eRef, { paid: round2((cur.paid || 0) - p.amount), installments: insts, lastReversalId: txId, updatedAt: fs.serverTimestamp() });
+        tx.update(ref("payments", p.id), { reversedBy: txId, reversedAt: fs.serverTimestamp() });
+      }
+    });
+    toast(t("saved"));
+    done();
+  }, { submitLabel: t("reverse"), danger: true, size: "md" });
+}
+
+// ===== إلغاء اشتراك (مع استرداد اختياري) =====
+export async function openCancel(e, done) {
+  const S = session();
+  const canRefund = hasSpecial(S, "refund");
+  const treasuries = canRefund ? await myTreasuries("withdraw") : [];
+  const html = `<p class="mb-2"><b>${esc(e.studentCode)} ${esc(e.studentName)}</b> — ${esc(e.groupCode)}</p>
+    <p class="small text-muted">${t("cancel_note")} ${t("total_collected")}: <b>${fmtMoney(e.paid || 0)}</b></p>
+    <div class="row g-3">
+      <div class="col-12"><label class="form-label">${t("cancel_reason")} <span class="text-danger">*</span></label><input name="reason" class="form-control" required></div>
+      ${canRefund && (e.paid || 0) > 0 ? `
+      <div class="col-md-6"><label class="form-label">${t("refund_amount")}</label><input name="refund" type="number" min="0" max="${e.paid}" step="any" class="form-control" value="0"></div>
+      <div class="col-md-6"><label class="form-label">${t("refund_from")}</label><select name="treasuryId" class="form-select">${treasuries.map((x) => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div>` : ""}
+      ${!canRefund && (e.paid || 0) > 0 ? `<div class="col-12"><p class="form-text">${t("refund_need_perm")}</p></div>` : ""}
+    </div>`;
+  openModal(t("cancel_enrollment"), html, async (form) => {
+    const reason = form.reason.value.trim();
+    if (!reason) throw new UserError("required");
+    const refund = form.refund ? round2(Number(form.refund.value) || 0) : 0;
+    if (refund < 0 || refund > (e.paid || 0)) throw new UserError("err_refund_amount");
+    const eRef = ref("enrollments", e.id);
+    const upd = { status: "cancelled", cancelReason: reason, cancelledBy: S.profile.name || "", cancelledAt: fs.serverTimestamp(), refunded: refund, updatedAt: fs.serverTimestamp() };
+    if (refund > 0) {
+      const tr = treasuries.find((x) => x.id === form.treasuryId.value);
+      if (!tr) throw new UserError("no_withdraw_treasury");
+      await recordTx({ type: "refund", amount: refund, treasuryId: tr.id, treasuryName: tr.name, deltas: { [tr.id]: -refund }, reason, date: today(),
+        enrollmentId: e.id, studentId: e.studentId, studentCode: e.studentCode, studentName: e.studentName, groupId: e.groupId },
+      { write: (tx, txId) => { tx.update(eRef, { ...upd, lastRefundId: txId }); tx.update(ref("groups", e.groupId), { enrolledCount: fs.increment(-1) }); } });
+    } else {
+      const batch = fs.writeBatch(db);
+      batch.update(eRef, upd);
+      batch.update(ref("groups", e.groupId), { enrolledCount: fs.increment(-1) });
+      await batch.commit();
+    }
+    await audit("update", "enrollments", e.id, `${e.studentCode} — ${t("cancel_enrollment")}`, { status: e.status }, { status: "cancelled", reason, refund });
+    toast(t("saved"));
+    done();
+  }, { submitLabel: t("cancel_enrollment"), danger: true, size: "md" });
+}
+
+// ===== نقل طالب لمجموعة تانية =====
+export async function openTransfer(e, done) {
+  const S = session();
+  const snap = await fs.getDocs(fs.query(col("groups"), fs.where("status", "in", ["open", "running"])));
+  const canOver = hasSpecial(S, "overrideCapacity");
+  const seats = (g) => (Number(g.capacity) || 0) - (Number(g.enrolledCount) || 0);
+  const groups = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((g) => !g.deleted && g.id !== e.groupId);
+  if (!groups.length) { toast(t("no_open_groups"), "warning"); return; }
+  const html = `<p class="mb-2"><b>${esc(e.studentCode)} ${esc(e.studentName)}</b> — ${t("from")}: ${esc(e.groupCode)} (${fmtMoney(e.originalPrice)})</p>
+    <div class="row g-3">
+      <div class="col-12"><label class="form-label">${t("to_group")} <span class="text-danger">*</span></label><select name="groupId" class="form-select" required><option value="">—</option>${
+        groups.map((g) => `<option value="${g.id}" ${seats(g) <= 0 && !canOver ? "disabled" : ""}>${esc(g.code)} — ${esc(g.courseName)} — ${fmtMoney(g.price)} (${t("seats")}: ${Math.max(0, seats(g))})</option>`).join("")}</select></div>
+      <div class="col-12"><label class="form-label">${t("transfer_reason")} <span class="text-danger">*</span></label><input name="reason" class="form-control" required></div>
+      <div class="col-12"><p class="form-text" id="diffNote">${t("transfer_price_note")}</p></div>
+    </div>`;
+  openModal(t("transfer_student"), html, async (form) => {
+    const g = groups.find((x) => x.id === form.groupId.value);
+    const reason = form.reason.value.trim();
+    if (!g || !reason) throw new UserError("required");
+    if (seats(g) <= 0 && !canOver) throw new UserError("group_full");
+    const original = Number(g.price) || 0;
+    const finalPrice = round2(original - (e.discount || 0));
+    if (finalPrice < (e.paid || 0)) throw new UserError("err_transfer_paid");
+    const insts = adjustPlan(e.installments || [], round2(finalPrice - e.finalPrice));
+    const hist = [...(e.transfers || []), { from: e.groupCode, to: g.code, reason, by: S.profile.name || "", at: today() }];
+    const batch = fs.writeBatch(db);
+    batch.update(ref("enrollments", e.id), { groupId: g.id, groupCode: g.code, courseId: g.courseId, courseName: g.courseName, originalPrice: original, finalPrice, installments: insts, transfers: hist, updatedAt: fs.serverTimestamp() });
+    batch.update(ref("groups", e.groupId), { enrolledCount: fs.increment(-1) });
+    batch.update(ref("groups", g.id), { enrolledCount: fs.increment(1) });
+    await batch.commit();
+    await audit("update", "enrollments", e.id, `${e.studentCode}: ${e.groupCode} → ${g.code}`, { group: e.groupCode, finalPrice: e.finalPrice }, { group: g.code, finalPrice, reason });
+    toast(t("saved"));
+    done();
+  }, { submitLabel: t("transfer_student"), size: "md" });
+}
+
+// فرق السعر بيتضاف على آخر قسط، أو بيتخصم من الأقساط اللي لسه ما اتدفعتش من الآخر
+function adjustPlan(insts, diff) {
+  const out = insts.map((i) => ({ ...i }));
+  if (!out.length) return out;
+  if (diff > 0) { out[out.length - 1].amount = round2(out[out.length - 1].amount + diff); return out; }
+  let left = -diff;
+  for (let k = out.length - 1; k >= 0 && left > 0; k--) {
+    const free = round2(out[k].amount - (out[k].paid || 0));
+    const cut = Math.min(free, left);
+    out[k].amount = round2(out[k].amount - cut);
+    left = round2(left - cut);
+  }
+  return out.filter((i) => i.amount > 0 || (i.paid || 0) > 0).map((i, k) => ({ ...i, no: k + 1 }));
 }
 
 // طلاب مجموعة أو كورس

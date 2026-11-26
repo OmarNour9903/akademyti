@@ -15,6 +15,8 @@ service cloud.firestore {
     function can(t, m, a) { return isTenantAdmin(t) || (isEmployee(t) && a in me().get('perms', {}).get(m, [])); }
     function hasSpecial(t, s) { return isTenantAdmin(t) || (isEmployee(t) && s in me().get('special', [])); }
     function deletedChanged() { return request.resource.data.get('deleted', false) != resource.data.get('deleted', false); }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function near(a, b) { return math.abs(a - b) < 0.01; }
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isOwner() || isTenantAdmin(resource.data.tenantId));
@@ -23,7 +25,7 @@ service cloud.firestore {
         // موظف عنده صلاحية إضافة طلاب/محاضرين يقدر يعمل لهم حساب بوابة (من غير أي صلاحيات)
         || (request.resource.data.type == 'student' && can(request.resource.data.tenantId, 'students', 'add') && !request.resource.data.keys().hasAny(['perms', 'special']))
         || (request.resource.data.type == 'instructor' && can(request.resource.data.tenantId, 'instructors', 'add') && !request.resource.data.keys().hasAny(['perms', 'special']));
-      // الصلاحيات والحالة بيعدّلها المدير بس — المستخدم ميقدرش يعدّل مستنده
+      // الصلاحيات والحالة بيعدّلها المدير بس
       allow update: if isOwner()
         || (isTenantAdmin(resource.data.tenantId) && request.resource.data.tenantId == resource.data.tenantId);
       allow delete: if false;
@@ -33,8 +35,14 @@ service cloud.firestore {
       allow read: if isOwner() || inTenant(t);
       allow create: if isOwner();
       allow update: if isOwner()
-        || (isTenantAdmin(t) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'adminUid']));
+        || (isTenantAdmin(t) && !changed().hasAny(['status', 'plan', 'adminUid']));
       allow delete: if false;
+
+      function tPath(coll, id) { return /databases/$(database)/documents/tenants/$(t)/$(coll)/$(id); }
+      // صلاحية المستخدم على خزنة (المدير له كل حاجة)
+      function tAccess(tid, p) {
+        return isTenantAdmin(t) || (inTenant(t) && get(tPath('treasuries', tid)).data.get('access', {}).get(request.auth.uid, {}).get(p, false) == true);
+      }
 
       match /settings/{doc} {
         allow read: if inTenant(t);
@@ -42,10 +50,8 @@ service cloud.firestore {
         allow update: if isTenantAdmin(t);
       }
 
-      // الأقسام والموظفين: المدير بس (الموظف يقرأ مستنده هو)
       match /departments/{id} {
-        allow read, create, update: if isTenantAdmin(t);
-        allow delete: if isTenantAdmin(t);
+        allow read, create, update, delete: if isTenantAdmin(t);
       }
       match /employees/{id} {
         allow read: if isTenantAdmin(t) || (isEmployee(t) && me().refId == id);
@@ -59,91 +65,169 @@ service cloud.firestore {
         allow update: if inTenant(t) && request.resource.data.n == resource.data.n + 1;
       }
 
-      // سجل النشاط: إضافة بس، محدش يعدّل أو يمسح
+      // سجل النشاط: إضافة بس
       match /auditLog/{id} {
         allow read: if can(t, 'auditLog', 'view');
         allow create: if inTenant(t) && request.resource.data.actorUid == request.auth.uid;
         allow update, delete: if false;
       }
 
-      // باقي الأجزاء: حسب الصلاحيات. المسح = نقل للسلة ومحتاج صلاحية "يمسح"، والمسح النهائي للمدير بس
-      // ===== الماليات =====
-      function near(a, b) { return math.abs(a - b) < 0.01; }
-      function paymentPath(pid) { return /databases/$(database)/documents/tenants/$(t)/payments/$(pid); }
-      function groupPath(gid) { return /databases/$(database)/documents/tenants/$(t)/groups/$(gid); }
+      match /expenseCategories/{id} {
+        allow read: if inTenant(t);
+        allow create, update: if isTenantAdmin(t);
+      }
 
+      // ===== الاشتراكات =====
       match /enrollments/{id} {
         allow read: if can(t, 'enrollments', 'view') || can(t, 'payments', 'add');
-        // اشتراك جديد: السعر من المجموعة، والخصم بصلاحية وسبب، وعدد المسجلين يزيد واحد
         allow create: if can(t, 'enrollments', 'add')
           && request.resource.data.paid == 0
+          && request.resource.data.status == 'active'
           && request.resource.data.discount >= 0
           && near(request.resource.data.finalPrice, request.resource.data.originalPrice - request.resource.data.discount)
-          && request.resource.data.originalPrice == get(groupPath(request.resource.data.groupId)).data.price
+          && request.resource.data.originalPrice == get(tPath('groups', request.resource.data.groupId)).data.price
           && (request.resource.data.discount == 0 || (hasSpecial(t, 'discount') && request.resource.data.discountReason.size() > 0))
-          && getAfter(groupPath(request.resource.data.groupId)).data.enrolledCount == get(groupPath(request.resource.data.groupId)).data.enrolledCount + 1;
+          && getAfter(tPath('groups', request.resource.data.groupId)).data.enrolledCount == get(tPath('groups', request.resource.data.groupId)).data.enrolledCount + 1;
         allow update: if
-          // تسجيل دفعة: المدفوع يزيد بنفس مبلغ الدفعة الجديدة بالظبط
-          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paid', 'installments', 'lastPaymentId', 'updatedAt'])
+          // دفعة: المدفوع يزيد بمبلغ دفعة جديدة بالظبط
+          (changed().hasOnly(['paid', 'installments', 'lastPaymentId', 'updatedAt'])
             && can(t, 'payments', 'add')
-            && !exists(paymentPath(request.resource.data.lastPaymentId))
-            && getAfter(paymentPath(request.resource.data.lastPaymentId)).data.enrollmentId == id
-            && near(request.resource.data.paid - resource.data.paid, getAfter(paymentPath(request.resource.data.lastPaymentId)).data.amount))
-          // تعديل عادي: من غير ما يلمس الفلوس
+            && !exists(tPath('payments', request.resource.data.lastPaymentId))
+            && getAfter(tPath('payments', request.resource.data.lastPaymentId)).data.enrollmentId == id
+            && near(request.resource.data.paid - resource.data.paid, getAfter(tPath('payments', request.resource.data.lastPaymentId)).data.amount))
+          // حركة عكسية لدفعة (المدير): المدفوع يقل بمبلغها
+          || (changed().hasOnly(['paid', 'installments', 'lastReversalId', 'updatedAt'])
+            && isTenantAdmin(t)
+            && !exists(tPath('transactions', request.resource.data.lastReversalId))
+            && getAfter(tPath('transactions', request.resource.data.lastReversalId)).data.type == 'reversal'
+            && near(resource.data.paid - request.resource.data.paid, getAfter(tPath('transactions', request.resource.data.lastReversalId)).data.amount))
+          // إلغاء الاشتراك (مع استرداد اختياري)
+          || (changed().hasOnly(['status', 'cancelReason', 'cancelledBy', 'cancelledAt', 'refunded', 'lastRefundId', 'updatedAt'])
+            && resource.data.status == 'active' && request.resource.data.status == 'cancelled'
+            && request.resource.data.cancelReason.size() > 0
+            && getAfter(tPath('groups', resource.data.groupId)).data.enrolledCount == get(tPath('groups', resource.data.groupId)).data.enrolledCount - 1
+            && ((request.resource.data.refunded == 0 && (can(t, 'enrollments', 'edit') || hasSpecial(t, 'refund')))
+              || (request.resource.data.refunded > 0 && request.resource.data.refunded <= resource.data.paid && hasSpecial(t, 'refund')
+                && !exists(tPath('transactions', request.resource.data.lastRefundId))
+                && getAfter(tPath('transactions', request.resource.data.lastRefundId)).data.type == 'refund'
+                && near(getAfter(tPath('transactions', request.resource.data.lastRefundId)).data.amount, request.resource.data.refunded))))
+          // نقل لمجموعة تانية
+          || (changed().hasOnly(['groupId', 'groupCode', 'courseId', 'courseName', 'originalPrice', 'finalPrice', 'installments', 'transfers', 'updatedAt'])
+            && hasSpecial(t, 'transferStudent') && resource.data.status == 'active'
+            && request.resource.data.originalPrice == get(tPath('groups', request.resource.data.groupId)).data.price
+            && near(request.resource.data.finalPrice, request.resource.data.originalPrice - resource.data.discount)
+            && request.resource.data.finalPrice >= resource.data.paid
+            && getAfter(tPath('groups', request.resource.data.groupId)).data.enrolledCount == get(tPath('groups', request.resource.data.groupId)).data.enrolledCount + 1)
+          // تعديل عادي من غير فلوس
           || (!deletedChanged() && can(t, 'enrollments', 'edit')
-            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paid', 'finalPrice', 'originalPrice', 'discount', 'discountReason', 'lastPaymentId', 'studentId', 'groupId']))
-          // مسح لسلة المهملات: لو مفيش فلوس اتدفعت بس
+            && !changed().hasAny(['paid', 'finalPrice', 'originalPrice', 'discount', 'discountReason', 'lastPaymentId', 'lastReversalId', 'lastRefundId', 'refunded', 'studentId', 'groupId', 'status']))
+          // سلة المهملات: لو مفيش فلوس اتدفعت بس
           || (deletedChanged() && can(t, 'enrollments', 'delete') && resource.data.paid == 0);
         allow delete: if false;
       }
 
-      // الدفعات: إضافة بس، محدش يعدّلها أو يمسحها (التصحيح بحركة عكسية)
+      // ===== الدفعات: إضافة بس (التصحيح بحركة عكسية) =====
       match /payments/{id} {
         allow read: if can(t, 'payments', 'view');
         allow create: if can(t, 'payments', 'add')
           && request.resource.data.amount > 0
           && request.resource.data.receivedByUid == request.auth.uid
-          && getAfter(/databases/$(database)/documents/tenants/$(t)/enrollments/$(request.resource.data.enrollmentId)).data.lastPaymentId == id
-          && getAfter(/databases/$(database)/documents/tenants/$(t)/treasuries/$(request.resource.data.treasuryId)).data.lastTxId == id;
-        allow update, delete: if false;
+          && tAccess(request.resource.data.treasuryId, 'deposit')
+          && getAfter(tPath('enrollments', request.resource.data.enrollmentId)).data.lastPaymentId == id
+          && getAfter(tPath('treasuryBalances', request.resource.data.treasuryId)).data.lastTxId == id;
+        allow update: if isTenantAdmin(t) && changed().hasOnly(['reversedBy', 'reversedAt'])
+          && getAfter(tPath('transactions', request.resource.data.reversedBy)).data.paymentId == id;
+        allow delete: if false;
       }
 
-      // الخزن: المدير بيضيفها، والرصيد بيتغير بس بحركة مسجلة
+      // ===== الحركات: مصروف، تحويل، استرداد، عكسية =====
+      match /transactions/{id} {
+        allow read: if can(t, 'expenses', 'view') || can(t, 'reports', 'view') || tAccess(resource.data.treasuryId, 'viewTx')
+          || (inTenant(t) && resource.data.createdByUid == request.auth.uid);
+        allow create: if inTenant(t)
+          && request.resource.data.createdByUid == request.auth.uid
+          && request.resource.data.amount > 0
+          && getAfter(tPath('treasuryBalances', request.resource.data.treasuryId)).data.lastTxId == id
+          && (request.resource.data.get('toTreasuryId', null) == null || getAfter(tPath('treasuryBalances', request.resource.data.toTreasuryId)).data.lastTxId == id)
+          && (
+            (request.resource.data.type == 'expense' && can(t, 'expenses', 'add') && tAccess(request.resource.data.treasuryId, 'withdraw')
+              && request.resource.data.reason.size() > 0
+              && near(request.resource.data.deltas[request.resource.data.treasuryId], -request.resource.data.amount) && request.resource.data.deltas.size() == 1)
+            || (request.resource.data.type == 'refund' && hasSpecial(t, 'refund') && tAccess(request.resource.data.treasuryId, 'withdraw')
+              && near(request.resource.data.deltas[request.resource.data.treasuryId], -request.resource.data.amount) && request.resource.data.deltas.size() == 1)
+            || (request.resource.data.type == 'transfer' && tAccess(request.resource.data.treasuryId, 'transfer')
+              && request.resource.data.toTreasuryId != request.resource.data.treasuryId
+              && near(request.resource.data.deltas[request.resource.data.treasuryId], -request.resource.data.amount)
+              && near(request.resource.data.deltas[request.resource.data.toTreasuryId], request.resource.data.amount) && request.resource.data.deltas.size() == 2)
+            || (request.resource.data.type == 'reversal' && isTenantAdmin(t))
+          );
+        allow update: if isTenantAdmin(t) && changed().hasOnly(['reversedBy', 'reversedAt'])
+          && getAfter(tPath('transactions', request.resource.data.reversedBy)).data.reversedTxId == id;
+        allow delete: if false;
+      }
+
+      // ===== الخزن =====
       match /treasuries/{id} {
-        allow read: if can(t, 'payments', 'add') || can(t, 'payments', 'view');
-        allow create: if isTenantAdmin(t) && request.resource.data.balance == 0;
-        allow update: if
-          (isTenantAdmin(t) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['balance', 'lastTxId']))
-          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance', 'lastTxId'])
-            && can(t, 'payments', 'add')
-            && !exists(paymentPath(request.resource.data.lastTxId))
-            && near(request.resource.data.balance - resource.data.balance, getAfter(paymentPath(request.resource.data.lastTxId)).data.amount));
+        allow read: if isTenantAdmin(t) || (inTenant(t) && request.auth.uid in resource.data.get('members', []));
+        allow create: if isTenantAdmin(t) && !request.resource.data.keys().hasAny(['balance', 'lastTxId']);
+        // المدير يعدّل الاسم والصلاحيات (والرصيد القديم بيتشال بس، مش بيتضاف)
+        allow update: if isTenantAdmin(t) && !request.resource.data.keys().hasAny(['balance', 'lastTxId']);
+        allow delete: if false;
+      }
+      // أسماء الخزن (للتحويل) من غير أرصدة
+      match /treasuryNames/{id} {
+        allow read: if inTenant(t);
+        allow create, update: if isTenantAdmin(t);
+      }
+      // الرصيد: بيتشاف بصلاحية، وبيتغير بس بحركة جديدة مسجلة بنفس المبلغ، ومينفعش يبقى بالسالب
+      match /treasuryBalances/{id} {
+        allow read: if tAccess(id, 'viewBalance');
+        // خزنة جديدة برصيد صفر، أو نقل رصيد خزنة قديمة للنظام الجديد بنفس رقمها
+        allow create: if isTenantAdmin(t) && existsAfter(tPath('treasuries', id))
+          && request.resource.data.balance == (exists(tPath('treasuries', id)) ? get(tPath('treasuries', id)).data.get('balance', 0) : 0);
+        allow update: if changed().hasOnly(['balance', 'lastTxId', 'lastTxColl'])
+          && request.resource.data.balance >= 0
+          && (
+            (request.resource.data.lastTxColl == 'payments'
+              && can(t, 'payments', 'add') && tAccess(id, 'deposit')
+              && !exists(tPath('payments', request.resource.data.lastTxId))
+              && near(request.resource.data.balance - resource.data.balance, getAfter(tPath('payments', request.resource.data.lastTxId)).data.amount))
+            || (request.resource.data.lastTxColl == 'transactions'
+              && !exists(tPath('transactions', request.resource.data.lastTxId))
+              && near(request.resource.data.balance - resource.data.balance, getAfter(tPath('transactions', request.resource.data.lastTxId)).data.deltas[id]))
+          );
         allow delete: if false;
       }
 
       // تغيير السعر محتاج صلاحية "تعديل الأسعار"
-      function priceChangeOk(t, coll) {
+      function priceChangeOk(coll) {
         return !(coll in ['courses', 'groups']) || request.resource.data.get('price', null) == resource.data.get('price', null) || hasSpecial(t, 'changePrice');
       }
-      function groupCreatePriceOk(t, coll) {
+      function groupCreatePriceOk(coll) {
         return coll != 'groups' || hasSpecial(t, 'changePrice')
-          || request.resource.data.price == get(/databases/$(database)/documents/tenants/$(t)/courses/$(request.resource.data.courseId)).data.price;
+          || request.resource.data.price == get(tPath('courses', request.resource.data.courseId)).data.price;
       }
-      // زيادة عدد المسجلين في مجموعة مع الاشتراك (بحد العدد الأقصى)
-      function enrollCountOk(t, coll) {
+      // عدد المسجلين في المجموعة بيتغير بواحد مع الاشتراك/الإلغاء/النقل
+      function enrollCountOk(coll) {
         return coll == 'groups'
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['enrolledCount'])
-          && can(t, 'enrollments', 'add')
-          && request.resource.data.enrolledCount == resource.data.enrolledCount + 1
-          && (request.resource.data.enrolledCount <= resource.data.capacity || hasSpecial(t, 'overrideCapacity'));
+          && changed().hasOnly(['enrolledCount'])
+          && (
+            (request.resource.data.enrolledCount == resource.data.enrolledCount + 1
+              && (can(t, 'enrollments', 'add') || hasSpecial(t, 'transferStudent'))
+              && (request.resource.data.enrolledCount <= resource.data.capacity || hasSpecial(t, 'overrideCapacity')))
+            || (request.resource.data.enrolledCount == resource.data.enrolledCount - 1
+              && (can(t, 'enrollments', 'edit') || hasSpecial(t, 'refund') || hasSpecial(t, 'transferStudent')))
+          );
       }
 
+      // باقي الأجزاء حسب الصلاحيات. المسح = سلة ومحتاج "يمسح"، والمسح النهائي للمدير بس
       match /{coll}/{id} {
-        allow read: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries']) && can(t, coll, 'view');
-        allow create: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries']) && can(t, coll, 'add') && groupCreatePriceOk(t, coll);
-        allow update: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries'])
-          && ((!deletedChanged() && can(t, coll, 'edit') && priceChangeOk(t, coll)) || (deletedChanged() && can(t, coll, 'delete')) || enrollCountOk(t, coll));
-        allow delete: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'treasuries']) && isTenantAdmin(t);
+        function generic() { return !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings', 'enrollments', 'payments', 'transactions', 'treasuries', 'treasuryNames', 'treasuryBalances', 'expenseCategories']); }
+        allow read: if generic() && can(t, coll, 'view');
+        allow create: if generic() && can(t, coll, 'add') && groupCreatePriceOk(coll);
+        allow update: if generic()
+          && ((!deletedChanged() && can(t, coll, 'edit') && priceChangeOk(coll)) || (deletedChanged() && can(t, coll, 'delete')) || enrollCountOk(coll));
+        allow delete: if generic() && isTenantAdmin(t);
       }
     }
   }

@@ -15,6 +15,7 @@ for (const f of files) {
     const tgt = path.resolve(path.dirname(f), m[2]);
     for (const n of m[1].split(",").map((x) => x.trim()).filter(Boolean)) { imported.add(n); if (exp[tgt] && !exp[tgt].has(n)) { console.log("MISSING EXPORT", f, n); bad++; } }
   }
+  for (const m of s.matchAll(/const \{([^}]+)\} = await import\(/g)) m[1].split(",").forEach((x) => imported.add(x.trim()));
   const local = new Set([...s.matchAll(/(?:function|const|let|var|class)\s+(\w+)/g)].map((m) => m[1]));
   const others = new Set(); Object.entries(exp).forEach(([k, v]) => { if (k !== path.resolve(f)) v.forEach((n) => others.add(n)); });
   for (const n of others) if (new RegExp("(?<![\\w.])" + n + "\\(").test(s) && !imported.has(n) && !local.has(n)) { console.log("NOT IMPORTED", f, n); bad++; }

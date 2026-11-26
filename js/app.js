@@ -1,34 +1,62 @@
-import { db, fs } from "./firebase.js";
-import { applyI18n, toggleLang } from "./i18n.js";
+import { applyI18n, toggleLang, t } from "./i18n.js";
 import { requireSession, logout } from "./session.js";
+import { setSession } from "./data.js";
+import { can } from "./perms.js";
 
 applyI18n();
-document.getElementById("langBtn").addEventListener("click", toggleLang);
 document.getElementById("logoutBtn").addEventListener("click", logout);
 document.getElementById("menuBtn").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
 
 const session = await requireSession(["admin", "employee"]);
-const tid = session.tenant.id;
+setSession(session);
+const isAdmin = session.role === "admin";
 document.getElementById("tenantName").textContent = session.tenant.name;
 document.getElementById("userName").textContent = session.profile.name;
+document.getElementById("roleBadge").textContent = t(isAdmin ? "role_admin" : "role_employee");
 
-function showView(name) {
+const views = {
+  dashboard: { load: () => import("./views/dashboard.js") },
+  departments: { admin: true, load: () => import("./views/departments.js") },
+  employees: { admin: true, load: () => import("./views/employees.js") },
+  audit: { perm: "auditLog", load: () => import("./views/audit.js") },
+  trash: { admin: true, load: () => import("./views/trash.js") }
+};
+
+// إخفاء الأجزاء اللي المستخدم مالوش صلاحية عليها
+document.querySelectorAll("#sideNav [data-admin]").forEach((a) => a.classList.toggle("d-none", !isAdmin));
+document.querySelectorAll("#sideNav [data-perm]").forEach((a) => a.classList.toggle("d-none", !can(session, a.dataset.perm)));
+document.querySelectorAll("#sideNav .nav-section").forEach((s) => {
+  const any = [...document.querySelectorAll("#sideNav [data-admin], #sideNav [data-perm='auditLog']")].some((a) => !a.classList.contains("d-none"));
+  s.classList.toggle("d-none", !any);
+});
+
+const root = document.getElementById("viewRoot");
+
+function placeholder() {
+  root.innerHTML = `<div class="card card-soft p-5 text-center text-muted"><i class="bi bi-cone-striped fs-1 mb-2"></i><p class="mb-0">${t("coming_soon")}</p></div>`;
+}
+
+async function show() {
+  const name = location.hash.slice(1) || "dashboard";
   document.querySelectorAll("#sideNav .nav-link").forEach((a) => a.classList.toggle("active", a.dataset.view === name));
-  document.getElementById("view-dashboard").classList.toggle("d-none", name !== "dashboard");
-  document.getElementById("view-placeholder").classList.toggle("d-none", name === "dashboard");
   document.getElementById("sidebar").classList.remove("open");
+  const v = views[name];
+  if (!v) return placeholder();
+  if ((v.admin && !isAdmin) || (v.perm && !can(session, v.perm))) { location.hash = "#dashboard"; return; }
+  root.innerHTML = `<div class="text-center text-muted py-5"><div class="spinner-border"></div></div>`;
+  try {
+    const mod = await v.load();
+    await mod.render(root);
+  } catch (e) {
+    console.error(e);
+    root.innerHTML = `<div class="alert alert-danger">${t("err_generic")}</div>`;
+  }
 }
-window.addEventListener("hashchange", () => showView(location.hash.slice(1) || "dashboard"));
-showView(location.hash.slice(1) || "dashboard");
 
-async function count(q) {
-  try { return (await fs.getCountFromServer(q)).data().count; } catch (e) { console.error(e); return "-"; }
-}
-
-async function loadStats() {
-  const col = (name) => fs.collection(db, "tenants", tid, name);
-  document.getElementById("statTotal").textContent = await count(col("students"));
-  document.getElementById("statCurrent").textContent = await count(fs.query(col("enrollments"), fs.where("status", "==", "active")));
-  document.getElementById("statCourses").textContent = await count(fs.query(col("courses"), fs.where("status", "==", "available")));
-}
-loadStats();
+document.getElementById("langBtn").addEventListener("click", () => {
+  toggleLang();
+  document.getElementById("roleBadge").textContent = t(isAdmin ? "role_admin" : "role_employee");
+  show();
+});
+window.addEventListener("hashchange", show);
+show();

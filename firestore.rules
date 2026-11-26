@@ -3,18 +3,23 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    // مالك المنصة — لازم يطابق OWNER_EMAIL في js/config.js
+    // مالك المنصة: لازم يطابق OWNER_EMAIL في js/config.js
     function isOwner() { return signedIn() && request.auth.token.email == 'omarnour992003@gmail.com'; }
-    function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function hasUser() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
     function tenantActive(t) { return get(/databases/$(database)/documents/tenants/$(t)).data.status == 'active'; }
-    function inTenant(t) { return hasUser() && userDoc().data.tenantId == t && userDoc().data.status == 'active' && tenantActive(t); }
-    function isTenantAdmin(t) { return inTenant(t) && userDoc().data.type == 'admin'; }
+    function inTenant(t) { return hasUser() && me().tenantId == t && me().status == 'active' && tenantActive(t); }
+    function isTenantAdmin(t) { return inTenant(t) && me().type == 'admin'; }
+    function isEmployee(t) { return inTenant(t) && me().type == 'employee'; }
+    // صلاحية الموظف على جزء معيّن (المدير له كل الصلاحيات)
+    function can(t, m, a) { return isTenantAdmin(t) || (isEmployee(t) && a in me().get('perms', {}).get(m, [])); }
+    function deletedChanged() { return request.resource.data.get('deleted', false) != resource.data.get('deleted', false); }
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isOwner() || isTenantAdmin(resource.data.tenantId));
       allow create: if isOwner()
         || (isTenantAdmin(request.resource.data.tenantId) && request.resource.data.type in ['employee', 'student', 'instructor', 'admin']);
+      // الصلاحيات والحالة بيعدّلها المدير بس — المستخدم ميقدرش يعدّل مستنده
       allow update: if isOwner()
         || (isTenantAdmin(resource.data.tenantId) && request.resource.data.tenantId == resource.data.tenantId);
       allow delete: if false;
@@ -27,13 +32,43 @@ service cloud.firestore {
         || (isTenantAdmin(t) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'adminUid']));
       allow delete: if false;
 
-      match /settings/general {
-        allow create: if isOwner();
+      match /settings/{doc} {
+        allow read: if inTenant(t);
+        allow create: if isOwner() || isTenantAdmin(t);
+        allow update: if isTenantAdmin(t);
       }
 
-      // المرحلة 0: مدير الأكاديمية بس. هتتفصّل بالصلاحيات في المرحلة 1
-      match /{document=**} {
-        allow read, write: if isTenantAdmin(t);
+      // الأقسام والموظفين: المدير بس (الموظف يقرأ مستنده هو)
+      match /departments/{id} {
+        allow read, create, update: if isTenantAdmin(t);
+        allow delete: if isTenantAdmin(t);
+      }
+      match /employees/{id} {
+        allow read: if isTenantAdmin(t) || (isEmployee(t) && me().refId == id);
+        allow create, update, delete: if isTenantAdmin(t);
+      }
+
+      // عدادات الأكواد: تزيد بواحد بس
+      match /counters/{entity} {
+        allow read: if inTenant(t);
+        allow create: if inTenant(t) && request.resource.data.n == 1;
+        allow update: if inTenant(t) && request.resource.data.n == resource.data.n + 1;
+      }
+
+      // سجل النشاط: إضافة بس، محدش يعدّل أو يمسح
+      match /auditLog/{id} {
+        allow read: if can(t, 'auditLog', 'view');
+        allow create: if inTenant(t) && request.resource.data.actorUid == request.auth.uid;
+        allow update, delete: if false;
+      }
+
+      // باقي الأجزاء: حسب الصلاحيات. المسح = نقل للسلة ومحتاج صلاحية "يمسح"، والمسح النهائي للمدير بس
+      match /{coll}/{id} {
+        allow read: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && can(t, coll, 'view');
+        allow create: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && can(t, coll, 'add');
+        allow update: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings'])
+          && ((!deletedChanged() && can(t, coll, 'edit')) || (deletedChanged() && can(t, coll, 'delete')));
+        allow delete: if !(coll in ['departments', 'employees', 'counters', 'auditLog', 'settings']) && isTenantAdmin(t);
       }
     }
   }

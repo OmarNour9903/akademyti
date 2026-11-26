@@ -1,10 +1,10 @@
-import { fs } from "../firebase.js?v=20261126232843";
-import { t } from "../i18n.js?v=20261126232843";
-import { esc } from "../util.js?v=20261126232843";
-import { col, session } from "../data.js?v=20261126232843";
-import { can, hasSpecial } from "../perms.js?v=20261126232843";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126232843";
-import { groupsTable } from "./groups.js?v=20261126232843";
+import { fs } from "../firebase.js?v=20261126233856";
+import { t } from "../i18n.js?v=20261126233856";
+import { esc } from "../util.js?v=20261126233856";
+import { col, session } from "../data.js?v=20261126233856";
+import { can, hasSpecial } from "../perms.js?v=20261126233856";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126233856";
+import { groupsTable } from "./groups.js?v=20261126233856";
 
 const statuses = ["available", "paused", "archived"];
 
@@ -40,7 +40,7 @@ export async function renderDetail(root, id) {
     <div class="d-flex flex-wrap align-items-center gap-2 my-3">
       <span class="badge text-bg-dark font-monospace fs-6">${esc(c.code)}</span>
       <h1 class="h4 fw-bold mb-0">${esc(c.name)}</h1> ${statusBadge(c.status)}
-      ${can(S, "courses", "edit") ? `<button id="editBtn" class="btn btn-sm btn-outline-secondary ms-auto"><i class="bi bi-pencil"></i> ${t("edit")}</button>` : ""}
+      ${can(S, "courses", "edit") ? `<button id="editBtn" class="btn btn-sm btn-outline-secondary ms-auto"><i class="bi bi-pencil-square"></i> ${t("edit")}</button>` : ""}
     </div>
     <div class="row g-3">
       <div class="col-lg-5"><div class="card card-soft p-4 h-100">
@@ -61,7 +61,7 @@ export async function renderDetail(root, id) {
       </div></div>
     </div>`;
   if (root.querySelector("#editBtn")) root.querySelector("#editBtn").addEventListener("click", () => view.openForm(c, () => renderDetail(root, id)));
-  import("../enroll.js?v=20261126232843").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "courseId", id));
+  import("../enroll.js?v=20261126233856").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "courseId", id));
   if (!can(S, "groups", "view")) { root.querySelector("#groupsBox").innerHTML = `<p class="text-muted small">${t("no_permission")}</p>`; root.querySelector("#instList").textContent = t("no_permission"); return; }
   const snap = await fs.getDocs(fs.query(col("groups"), fs.where("courseId", "==", id)));
   const groups = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((g) => !g.deleted);

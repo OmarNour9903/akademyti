@@ -1,11 +1,11 @@
-import { fs } from "../firebase.js?v=20261126232843";
-import { t } from "../i18n.js?v=20261126232843";
-import { esc, toast } from "../util.js?v=20261126232843";
-import { col, session } from "../data.js?v=20261126232843";
-import { can, hasSpecial } from "../perms.js?v=20261126232843";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126232843";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126232843";
-import { groupsTable } from "./groups.js?v=20261126232843";
+import { fs } from "../firebase.js?v=20261126233856";
+import { t } from "../i18n.js?v=20261126233856";
+import { esc, toast } from "../util.js?v=20261126233856";
+import { col, session } from "../data.js?v=20261126233856";
+import { can, hasSpecial } from "../perms.js?v=20261126233856";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126233856";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126233856";
+import { groupsTable } from "./groups.js?v=20261126233856";
 
 const statuses = ["active", "suspended", "archived"];
 const payTypes = ["salary", "percentage", "perStudent", "hourly"];
@@ -57,7 +57,7 @@ export async function renderDetail(root, id) {
     <div class="d-flex flex-wrap align-items-center gap-2 my-3">
       <span class="badge text-bg-dark font-monospace fs-6">${esc(x.code)}</span>
       <h1 class="h4 fw-bold mb-0">${esc(x.name)}</h1> ${statusBadge(x.status)}
-      ${can(S, "instructors", "edit") ? `<button id="editBtn" class="btn btn-sm btn-outline-secondary ms-auto"><i class="bi bi-pencil"></i> ${t("edit")}</button>` : ""}
+      ${can(S, "instructors", "edit") ? `<button id="editBtn" class="btn btn-sm btn-outline-secondary ms-auto"><i class="bi bi-pencil-square"></i> ${t("edit")}</button>` : ""}
     </div>
     <div class="row g-3">
       <div class="col-lg-6"><div class="card card-soft p-4 h-100">
@@ -77,10 +77,10 @@ export async function renderDetail(root, id) {
   const reload = () => renderDetail(root, id);
   root.querySelector("#editBtn")?.addEventListener("click", () => view.openForm(x, reload));
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(x.email); toast(t("reset_sent_to") + " " + x.email); });
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126232843").then((m) => m.openCreateLogin("instructors", "instructor", x, reload)));
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126233856").then((m) => m.openCreateLogin("instructors", "instructor", x, reload)));
   if (!can(S, "groups", "view")) { root.querySelector("#groupsBox").textContent = t("no_permission"); root.querySelector("#duesBox").textContent = t("no_permission"); return; }
   const snap = await fs.getDocs(fs.query(col("groups"), fs.where("instructorIds", "array-contains", id)));
   const groups = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((g) => !g.deleted);
   root.querySelector("#groupsBox").innerHTML = groupsTable(groups);
-  import("../dues.js?v=20261126232843").then((m) => m.instructorDues(root.querySelector("#duesBox"), x, groups)).catch((e) => console.error(e));
+  import("../dues.js?v=20261126233856").then((m) => m.instructorDues(root.querySelector("#duesBox"), x, groups)).catch((e) => console.error(e));
 }

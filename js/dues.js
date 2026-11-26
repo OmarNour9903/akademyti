@@ -1,10 +1,10 @@
 // مستحقات المحاضر: النسبة بتتحسب على المحصّل فعلاً من طلاب المجموعة
-import { fs } from "./firebase.js?v=20261126232843";
-import { t } from "./i18n.js?v=20261126232843";
-import { esc } from "./util.js?v=20261126232843";
-import { col, session } from "./data.js?v=20261126232843";
-import { can } from "./perms.js?v=20261126232843";
-import { fmtMoney } from "./crud.js?v=20261126232843";
+import { fs } from "./firebase.js?v=20261126233856";
+import { t } from "./i18n.js?v=20261126233856";
+import { esc } from "./util.js?v=20261126233856";
+import { col, session } from "./data.js?v=20261126233856";
+import { can } from "./perms.js?v=20261126233856";
+import { fmtMoney } from "./crud.js?v=20261126233856";
 
 const r2 = (n) => Math.round(n * 100) / 100;
 
@@ -42,11 +42,11 @@ export async function instructorDues(box, inst, groups) {
         ${baseLabel ? `<td>${inst.payType === "percentage" ? fmtMoney(r.base) : r.base}</td><td>${fmtMoney(r.due)}</td>` : ""}
         <td class="text-success">${fmtMoney(r.paid)}</td>
         ${baseLabel ? `<td class="fw-semibold ${r.left > 0 ? "text-danger" : ""}">${fmtMoney(r.left)}</td>` : ""}
-        <td>${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="${r.g.id}" data-amt="${r.left > 0 ? r.left : ""}"><i class="bi bi-cash"></i> ${t("pay_out")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="text-muted small">${t("no_data")}</p>`}
+        <td>${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="${r.g.id}" data-amt="${r.left > 0 ? r.left : ""}"><i class="bi bi-cash-coin"></i> ${t("pay_out")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="text-muted small">${t("no_data")}</p>`}
     ${general ? `<p class="small">${t("dues_general_paid")}: <b>${fmtMoney(general)}</b></p>` : ""}
-    ${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="" data-amt=""><i class="bi bi-cash"></i> ${t("pay_out_general")}</button>` : ""}`;
+    ${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="" data-amt=""><i class="bi bi-cash-coin"></i> ${t("pay_out_general")}</button>` : ""}`;
   box.querySelectorAll("[data-payout]").forEach((b) => b.addEventListener("click", async () => {
-    const { openExpense } = await import("./views/finance.js?v=20261126232843");
+    const { openExpense } = await import("./views/finance.js?v=20261126233856");
     const g = groups.find((x) => x.id === b.dataset.payout);
     openExpense(() => instructorDues(box, inst, groups), {
       categoryName: t("instructor_pay_cat"), instructorId: inst.id, groupId: g ? g.id : "", amount: b.dataset.amt,

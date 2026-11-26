@@ -1,8 +1,8 @@
-import { db, fs, createAccount } from "../firebase.js?v=20261126232843";
-import { t } from "../i18n.js?v=20261126232843";
-import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126232843";
-import { col, ref, userRef, audit, listActive, nextEntityCode, softDelete, session } from "../data.js?v=20261126232843";
-import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126232843";
+import { db, fs, createAccount } from "../firebase.js?v=20261126233856";
+import { t } from "../i18n.js?v=20261126233856";
+import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126233856";
+import { col, ref, userRef, audit, listActive, nextEntityCode, softDelete, session } from "../data.js?v=20261126233856";
+import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126233856";
 
 let depts = [];
 
@@ -42,9 +42,9 @@ async function loadRows(root, reload) {
       <td><span class="badge ${e.status === "active" ? "text-bg-success" : "text-bg-secondary"}">${t(e.status === "active" ? "st_active" : "st_suspended")}</span></td>
       <td class="text-end text-nowrap">
         <button class="btn btn-sm btn-outline-primary" data-perm="${e.id}" title="${t("permissions")}"><i class="bi bi-shield-lock"></i></button>
-        <button class="btn btn-sm btn-outline-secondary" data-edit="${e.id}" title="${t("edit")}"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" data-edit="${e.id}" title="${t("edit")}"><i class="bi bi-pencil-square"></i></button>
         <button class="btn btn-sm btn-outline-warning" data-toggle="${e.id}" title="${t(e.status === "active" ? "suspend" : "activate")}"><i class="bi ${e.status === "active" ? "bi-pause-circle" : "bi-play-circle"}"></i></button>
-        <button class="btn btn-sm btn-outline-danger" data-del="${e.id}" title="${t("delete")}"><i class="bi bi-trash"></i></button>
+        <button class="btn btn-sm btn-outline-danger" data-del="${e.id}" title="${t("delete")}"><i class="bi bi-trash3"></i></button>
       </td></tr>`).join("");
   const find = (id) => emps.find((e) => e.id === id);
   body.querySelectorAll("[data-perm]").forEach((b) => b.addEventListener("click", () => openPerms(find(b.dataset.perm), reload)));

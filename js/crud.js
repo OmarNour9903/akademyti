@@ -1,9 +1,9 @@
 // محرك عام لصفحات القوايم والفورمز (كورسات، طلاب، محاضرين، مجموعات)
-import { db, fs } from "./firebase.js?v=20261126232843";
-import { t } from "./i18n.js?v=20261126232843";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126232843";
-import { col, ref, audit, nextEntityCode, softDelete, session } from "./data.js?v=20261126232843";
-import { can } from "./perms.js?v=20261126232843";
+import { db, fs } from "./firebase.js?v=20261126233856";
+import { t } from "./i18n.js?v=20261126233856";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126233856";
+import { col, ref, audit, nextEntityCode, softDelete, session } from "./data.js?v=20261126233856";
+import { can } from "./perms.js?v=20261126233856";
 
 export const STATUS_BADGE = {
   active: "text-bg-success", available: "text-bg-success", open: "text-bg-success", running: "text-bg-primary",
@@ -85,8 +85,8 @@ export function crudView(cfg) {
       body.innerHTML = list.map((x) => `<tr class="${cfg.detail ? "row-link" : ""}" data-id="${x.id}">
         ${cfg.columns.map((c) => `<td>${c.render ? c.render(x) : esc(x[c.key] ?? "-")}</td>`).join("")}
         <td class="text-end text-nowrap">
-          ${can(S, cfg.coll, "edit") ? `<button class="btn btn-sm btn-outline-secondary" data-edit="${x.id}" title="${t("edit")}"><i class="bi bi-pencil"></i></button>` : ""}
-          ${can(S, cfg.coll, "delete") ? `<button class="btn btn-sm btn-outline-danger" data-del="${x.id}" title="${t("delete")}"><i class="bi bi-trash"></i></button>` : ""}
+          ${can(S, cfg.coll, "edit") ? `<button class="btn btn-sm btn-outline-secondary" data-edit="${x.id}" title="${t("edit")}"><i class="bi bi-pencil-square"></i></button>` : ""}
+          ${can(S, cfg.coll, "delete") ? `<button class="btn btn-sm btn-outline-danger" data-del="${x.id}" title="${t("delete")}"><i class="bi bi-trash3"></i></button>` : ""}
         </td></tr>`).join("");
       const find = (id) => items.find((x) => x.id === id);
       body.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); openForm(find(b.dataset.edit), reload); }));

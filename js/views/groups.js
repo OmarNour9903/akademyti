@@ -1,9 +1,9 @@
-import { fs } from "../firebase.js?v=20261126232843";
-import { t } from "../i18n.js?v=20261126232843";
-import { esc, UserError } from "../util.js?v=20261126232843";
-import { col, session, nextNumber, codeFormat } from "../data.js?v=20261126232843";
-import { can, hasSpecial } from "../perms.js?v=20261126232843";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126232843";
+import { fs } from "../firebase.js?v=20261126233856";
+import { t } from "../i18n.js?v=20261126233856";
+import { esc, UserError } from "../util.js?v=20261126233856";
+import { col, session, nextNumber, codeFormat } from "../data.js?v=20261126233856";
+import { can, hasSpecial } from "../perms.js?v=20261126233856";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126233856";
 
 const statuses = ["open", "running", "finished", "cancelled", "archived"];
 let cache = { courses: [], instructors: [] };
@@ -90,7 +90,7 @@ export async function renderDetail(root, id) {
     <div class="d-flex flex-wrap align-items-center gap-2 my-3">
       <span class="badge text-bg-dark font-monospace fs-6">${esc(g.code)}</span>
       <h1 class="h4 fw-bold mb-0">${esc(g.courseName)}</h1> ${statusBadge(g.status)}
-      ${can(S, "groups", "edit") ? `<button id="editBtn" class="btn btn-sm btn-outline-secondary ms-auto"><i class="bi bi-pencil"></i> ${t("edit")}</button>` : ""}
+      ${can(S, "groups", "edit") ? `<button id="editBtn" class="btn btn-sm btn-outline-secondary ms-auto"><i class="bi bi-pencil-square"></i> ${t("edit")}</button>` : ""}
     </div>
     <div class="row g-3">
       <div class="col-lg-6"><div class="card card-soft p-4 h-100">
@@ -104,6 +104,6 @@ export async function renderDetail(root, id) {
       </div></div>
       <div class="col-12"><div class="card card-soft p-4"><h2 class="h6 fw-bold mb-3">${t("group_students")}</h2><div id="stuBox"></div></div></div>
     </div>`;
-  import("../enroll.js?v=20261126232843").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
+  import("../enroll.js?v=20261126233856").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
   if (root.querySelector("#editBtn")) root.querySelector("#editBtn").addEventListener("click", () => view.openForm(g, () => renderDetail(root, id)));
 }

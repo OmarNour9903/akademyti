@@ -1,11 +1,11 @@
-import { db, fs } from "../firebase.js?v=20261126232843";
-import { t } from "../i18n.js?v=20261126232843";
-import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261126232843";
-import { col, ref, audit, session, listActive } from "../data.js?v=20261126232843";
-import { can } from "../perms.js?v=20261126232843";
-import { fmtMoney } from "../crud.js?v=20261126232843";
-import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261126232843";
-import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS, migrateLegacy } from "../money.js?v=20261126232843";
+import { db, fs } from "../firebase.js?v=20261126233856";
+import { t } from "../i18n.js?v=20261126233856";
+import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261126233856";
+import { col, ref, audit, session, listActive } from "../data.js?v=20261126233856";
+import { can } from "../perms.js?v=20261126233856";
+import { fmtMoney } from "../crud.js?v=20261126233856";
+import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261126233856";
+import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS, migrateLegacy } from "../money.js?v=20261126233856";
 
 let tab = "payments";
 const monthStart = () => today().slice(0, 8) + "01";
@@ -129,7 +129,7 @@ function txTable(list) {
       <td class="fw-semibold">${fmtMoney(x.amount)}</td>
       <td class="small">${esc(x.treasuryName)}${x.toTreasuryName ? ` ← ${esc(x.toTreasuryName)}` : ""}</td>
       <td class="small">${esc(x.reason || "")}</td><td class="small">${esc(x.createdBy)}</td>
-      <td>${x.reversedBy ? `<span class="badge text-bg-danger">${t("reversed")}</span>` : (session().role === "admin" && x.type !== "reversal" && x.type !== "refund" ? `<button class="btn btn-sm btn-outline-danger" data-txrev="${x.id}" title="${t("reverse")}"><i class="bi bi-arrow-counterclockwise"></i></button>` : "")}</td></tr>`).join("")}</tbody></table></div>`;
+      <td>${x.reversedBy ? `<span class="badge text-bg-danger">${t("reversed")}</span>` : (session().role === "admin" && x.type !== "reversal" && x.type !== "refund" ? `<button class="btn btn-sm btn-outline-danger" data-txrev="${x.id}" title="${t("reverse")}" aria-label="${t("reverse")}"><i class="bi bi-arrow-return-left"></i></button>` : "")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function bindTxReverse(box, list, reload) {

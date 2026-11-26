@@ -1,4 +1,4 @@
-import { t } from "./i18n.js?v=20261126232843";
+import { t } from "./i18n.js?v=20261126233856";
 
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -51,7 +51,7 @@ function modalEls() {
 export function openModal(title, bodyHtml, onSubmit, { submitLabel, danger = false, size = "lg", allowInPreview = false } = {}) {
   modalEls();
   allowSubmit = !previewMode || allowInPreview;
-  document.getElementById("appModalDialog").className = `modal-dialog modal-dialog-scrollable modal-${size}`;
+  document.getElementById("appModalDialog").className = `modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down modal-${size}`;
   document.getElementById("appModalTitle").textContent = title;
   document.getElementById("appModalBody").innerHTML = `<div id="appModalError" class="alert alert-danger d-none"></div>${bodyHtml}`;
   const btn = document.getElementById("appModalSubmit");

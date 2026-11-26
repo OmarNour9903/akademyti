@@ -1,11 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126232843";
-import { t, currentLang } from "./i18n.js?v=20261126232843";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126232843";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126232843";
-import { can, hasSpecial } from "./perms.js?v=20261126232843";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126232843";
-import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126232843";
+import { db, fs } from "./firebase.js?v=20261126233856";
+import { t, currentLang } from "./i18n.js?v=20261126233856";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261126233856";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126233856";
+import { can, hasSpecial } from "./perms.js?v=20261126233856";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261126233856";
+import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126233856";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -261,7 +261,7 @@ export async function studentEnrollments(box, student, reload) {
           <span class="fw-semibold">${esc(e.courseName)}</span> ${statusBadge(e.status)}
           ${e.discount ? `<span class="badge text-bg-info" title="${esc(e.discountReason)}">${t("discount")}: ${fmtMoney(e.discount)}</span>` : ""}
           <span class="ms-auto d-flex gap-1">
-          ${e.status === "active" && can(S, "payments", "add") && enrollmentTotals(e).remaining > 0 ? `<button class="btn btn-sm btn-success" data-pay="${e.id}"><i class="bi bi-cash"></i> ${t("record_payment")}</button>` : ""}
+          ${e.status === "active" && can(S, "payments", "add") && enrollmentTotals(e).remaining > 0 ? `<button class="btn btn-sm btn-success" data-pay="${e.id}"><i class="bi bi-cash-coin"></i> ${t("record_payment")}</button>` : ""}
           ${e.status === "active" && hasSpecial(S, "transferStudent") ? `<button class="btn btn-sm btn-outline-primary" data-transfer="${e.id}" title="${t("transfer_student")}"><i class="bi bi-arrow-left-right"></i></button>` : ""}
           ${e.status === "active" && (hasSpecial(S, "refund") || can(S, "enrollments", "edit")) ? `<button class="btn btn-sm btn-outline-danger" data-cancel="${e.id}" title="${t("cancel_enrollment")}"><i class="bi bi-x-circle"></i></button>` : ""}
           </span>
@@ -297,7 +297,7 @@ export function paymentsTable(list, withStudent = true) {
       <td class="small">${esc(p.groupCode)}</td><td>#${esc(p.installmentNo)}</td><td class="fw-semibold text-success">${fmtMoney(p.amount)}</td>
       <td class="small">${t("m_" + p.method)}</td><td class="small">${esc(p.treasuryName)}</td><td class="small">${esc(p.receivedBy)}</td>
       <td class="text-nowrap">${p.reversedBy ? `<span class="badge text-bg-danger">${t("reversed")}</span>` : `<button class="btn btn-sm btn-outline-secondary" data-print="${p.id}" title="${t("print")}"><i class="bi bi-printer"></i></button>
-        ${session().role === "admin" ? `<button class="btn btn-sm btn-outline-danger" data-reverse="${p.id}" title="${t("reverse")}"><i class="bi bi-arrow-counterclockwise"></i></button>` : ""}`}</td></tr>`).join("")}</tbody></table></div>`;
+        ${session().role === "admin" ? `<button class="btn btn-sm btn-outline-danger" data-reverse="${p.id}" title="${t("reverse")}" aria-label="${t("reverse")}"><i class="bi bi-arrow-return-left"></i></button>` : ""}`}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 export function bindReprint(box, list, reload) {

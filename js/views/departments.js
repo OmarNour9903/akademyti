@@ -1,8 +1,8 @@
-import { db, fs } from "../firebase.js?v=20261126232843";
-import { t } from "../i18n.js?v=20261126232843";
-import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126232843";
-import { col, ref, userRef, audit, listActive, softDelete } from "../data.js?v=20261126232843";
-import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126232843";
+import { db, fs } from "../firebase.js?v=20261126233856";
+import { t } from "../i18n.js?v=20261126233856";
+import { esc, toast, openModal, confirmBox, UserError } from "../util.js?v=20261126233856";
+import { col, ref, userRef, audit, listActive, softDelete } from "../data.js?v=20261126233856";
+import { MODULES, SPECIAL, ACTIONS, label, moduleActions, effective } from "../perms.js?v=20261126233856";
 
 export async function render(root) {
   root.innerHTML = `
@@ -32,8 +32,8 @@ async function loadRows(root) {
       <td>${count}</td>
       <td><span class="badge text-bg-light">${nPerms}</span></td>
       <td class="text-end text-nowrap">
-        <button class="btn btn-sm btn-outline-secondary" data-edit="${d.id}"><i class="bi bi-pencil"></i> ${t("edit")}</button>
-        <button class="btn btn-sm btn-outline-danger" data-del="${d.id}"><i class="bi bi-trash"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" data-edit="${d.id}"><i class="bi bi-pencil-square"></i> ${t("edit")}</button>
+        <button class="btn btn-sm btn-outline-danger" data-del="${d.id}"><i class="bi bi-trash3"></i></button>
       </td></tr>`;
   }).join("");
   body.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => openForm(depts.find((d) => d.id === b.dataset.edit), () => render(root))));

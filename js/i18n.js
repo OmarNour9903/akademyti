@@ -368,7 +368,12 @@ const dict = {
     transactions: "الحركات المالية",
     treasuries_entity: "الخزن",
     expenseCategories: "بنود المصروفات",
-    inst_cancelled: "ملغي"
+    inst_cancelled: "ملغي",
+    lang_short: "EN",
+    nav_home: "الرئيسية",
+    nav_more: "المزيد",
+    auth_headline: "كل طالب وكورس ومحاضر ليه كود، وكل جنيه ليه إيصال.",
+    auth_sub: "منصة لإدارة أكاديميات الكورسات: المجموعات، والطلاب، والأقساط، والخزن، والصلاحيات."
   },
   en: {
     brand: "Akademyti",
@@ -739,7 +744,12 @@ const dict = {
     transactions: "Financial entries",
     treasuries_entity: "Treasuries",
     expenseCategories: "Expense items",
-    inst_cancelled: "Cancelled"
+    inst_cancelled: "Cancelled",
+    lang_short: "ع",
+    nav_home: "Home",
+    nav_more: "More",
+    auth_headline: "Every student, course and instructor has a code. Every pound has a receipt.",
+    auth_sub: "Management for course academies: groups, students, installments, treasuries and permissions."
   }
 };
 

@@ -1,9 +1,9 @@
 // محرك عام لصفحات القوايم والفورمز (كورسات، طلاب، محاضرين، مجموعات)
-import { db, fs } from "./firebase.js?v=20261126233856";
-import { t } from "./i18n.js?v=20261126233856";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126233856";
-import { col, ref, audit, nextEntityCode, softDelete, session } from "./data.js?v=20261126233856";
-import { can } from "./perms.js?v=20261126233856";
+import { db, fs } from "./firebase.js?v=20261126234105";
+import { t } from "./i18n.js?v=20261126234105";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126234105";
+import { col, ref, audit, nextEntityCode, softDelete, session } from "./data.js?v=20261126234105";
+import { can } from "./perms.js?v=20261126234105";
 
 export const STATUS_BADGE = {
   active: "text-bg-success", available: "text-bg-success", open: "text-bg-success", running: "text-bg-primary",
@@ -137,7 +137,8 @@ export function crudView(cfg) {
 
 // كارت معلومات في صفحة التفاصيل
 export function infoGrid(pairs) {
-  return `<dl class="row info-grid mb-0">${pairs.filter((p) => p).map(([k, v]) => `<dt class="col-sm-4">${t(k)}</dt><dd class="col-sm-8">${v === "" || v == null ? "-" : v}</dd>`).join("")}</dl>`;
+  const empty = (v) => v == null || String(v).replace(/<(?!button|a |img)[^>]*>/g, "").replace(/\(\s*\)/g, "").trim() === "";
+  return `<dl class="row info-grid mb-0">${pairs.filter((p) => p).map(([k, v]) => `<dt class="col-5 col-sm-4">${t(k)}</dt><dd class="col-7 col-sm-8">${empty(v) ? "-" : v}</dd>`).join("")}</dl>`;
 }
 
 export async function getOne(coll, id) {

@@ -1,11 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126233856";
-import { t, currentLang } from "./i18n.js?v=20261126233856";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126233856";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126233856";
-import { can, hasSpecial } from "./perms.js?v=20261126233856";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126233856";
-import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126233856";
+import { db, fs } from "./firebase.js?v=20261126234105";
+import { t, currentLang } from "./i18n.js?v=20261126234105";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261126234105";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126234105";
+import { can, hasSpecial } from "./perms.js?v=20261126234105";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261126234105";
+import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126234105";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -267,7 +267,7 @@ export async function studentEnrollments(box, student, reload) {
           </span>
         </div>
         ${e.status === "cancelled" ? `<p class="small text-danger mb-2">${t("cancel_reason")}: ${esc(e.cancelReason)} — ${esc(e.cancelledBy)}${e.refunded ? ` — ${t("refunded")}: ${fmtMoney(e.refunded)}` : ""}</p>` : ""}
-        ${(e.transfers || []).map((x) => `<p class="small text-primary mb-1"><i class="bi bi-arrow-left-right"></i> ${esc(x.from)} → ${esc(x.to)}: ${esc(x.reason)} — ${esc(x.by)} (${esc(x.at)})</p>`).join("")}
+        ${(e.transfers || []).map((x) => `<p class="small text-primary mb-1"><i class="bi bi-arrow-left-right"></i> ${t("from")} <bdi class="code-chip">${esc(x.from)}</bdi> ${t("to")} <bdi class="code-chip">${esc(x.to)}</bdi>: ${esc(x.reason)} — ${esc(x.by)} (<bdi>${esc(x.at)}</bdi>)</p>`).join("")}
         ${e.discount ? `<p class="small text-muted mb-2">${t("discount_reason")}: ${esc(e.discountReason)} — ${esc(e.discountBy)}</p>` : ""}
         ${installmentsTable(e)}
       </div>`).join("") +

@@ -1,8 +1,8 @@
-import { fs } from "../firebase.js?v=20261126233856";
-import { t } from "../i18n.js?v=20261126233856";
-import { esc, toast, openModal } from "../util.js?v=20261126233856";
-import { ref, audit } from "../data.js?v=20261126233856";
-import { createLogin } from "../accounts.js?v=20261126233856";
+import { fs } from "../firebase.js?v=20261126234105";
+import { t } from "../i18n.js?v=20261126234105";
+import { esc, toast, openModal } from "../util.js?v=20261126234105";
+import { ref, audit } from "../data.js?v=20261126234105";
+import { createLogin } from "../accounts.js?v=20261126234105";
 
 // إنشاء حساب بوابة لطالب أو محاضر موجود
 export function openCreateLogin(coll, type, x, done) {

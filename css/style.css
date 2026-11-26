@@ -282,3 +282,11 @@ td.font-monospace { color: var(--ticket); font-size: .85rem; }
   .totals-bar { flex-direction: column; gap: .2rem; }
 }
 .brand-mark { width: 28px; height: 28px; border-radius: 7px; vertical-align: middle; }
+
+/* تحسينات بعد المراجعة */
+.table.stackable > tbody > tr > td::before { font-family: var(--bs-body-font-family); letter-spacing: normal; }
+@media (max-width: 767.98px) {
+  .stat-card { padding: .9rem 1rem !important; }
+  .stat-value { font-size: 1.6rem; }
+  .stat-card .text-muted.small { font-size: .8rem; }
+}

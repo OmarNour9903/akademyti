@@ -1,9 +1,9 @@
-import { fs } from "../firebase.js?v=20261126233856";
-import { t } from "../i18n.js?v=20261126233856";
-import { col, session } from "../data.js?v=20261126233856";
-import { can } from "../perms.js?v=20261126233856";
+import { fs } from "../firebase.js?v=20261126234105";
+import { t } from "../i18n.js?v=20261126234105";
+import { col, session } from "../data.js?v=20261126234105";
+import { can } from "../perms.js?v=20261126234105";
 
-const card = (icon, cls, key, id) => `<div class="col-md-6 col-xl-3"><div class="card stat-card p-3 d-flex flex-row align-items-center gap-3">
+const card = (icon, cls, key, id) => `<div class="col-6 col-xl-3"><div class="card stat-card p-3 d-flex flex-row align-items-center gap-3">
   <div class="stat-icon ${cls}"><i class="bi ${icon}"></i></div>
   <div><div class="text-muted small">${t(key)}</div><div class="stat-value" id="${id}">-</div></div></div></div>`;
 
@@ -24,7 +24,7 @@ export async function render(root) {
   set("statTotal", fs.query(col("students"), fs.where("deleted", "==", false)));
   set("statCurrent", fs.query(col("enrollments"), fs.where("status", "==", "active")));
   if (root.querySelector("#statOverdue")) {
-    import("../enroll.js?v=20261126233856").then(async (m) => {
+    import("../enroll.js?v=20261126234105").then(async (m) => {
       const snap = await fs.getDocs(fs.query(col("enrollments"), fs.where("status", "==", "active")));
       let n = 0, amt = 0;
       snap.forEach((d) => { const e = d.data(); if (e.deleted) return; const x = m.enrollmentTotals(e); n += x.overdueCount; amt += x.overdueAmount; });

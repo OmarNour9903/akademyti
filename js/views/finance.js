@@ -1,11 +1,11 @@
-import { db, fs } from "../firebase.js?v=20261126233856";
-import { t } from "../i18n.js?v=20261126233856";
-import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261126233856";
-import { col, ref, audit, session, listActive } from "../data.js?v=20261126233856";
-import { can } from "../perms.js?v=20261126233856";
-import { fmtMoney } from "../crud.js?v=20261126233856";
-import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261126233856";
-import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS, migrateLegacy } from "../money.js?v=20261126233856";
+import { db, fs } from "../firebase.js?v=20261126234105";
+import { t } from "../i18n.js?v=20261126234105";
+import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261126234105";
+import { col, ref, audit, session, listActive } from "../data.js?v=20261126234105";
+import { can } from "../perms.js?v=20261126234105";
+import { fmtMoney } from "../crud.js?v=20261126234105";
+import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261126234105";
+import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS, migrateLegacy } from "../money.js?v=20261126234105";
 
 let tab = "payments";
 const monthStart = () => today().slice(0, 8) + "01";
@@ -39,10 +39,10 @@ export async function render(root) {
 
 function dateFilter(box, onGo, extra = "") {
   box.insertAdjacentHTML("beforeend", `<div class="card card-soft p-3 mb-3"><div class="row g-2 align-items-end">
-    <div class="col-auto"><label class="form-label small mb-1">${t("from")}</label><input type="date" class="form-control form-control-sm f-from" value="${monthStart()}"></div>
-    <div class="col-auto"><label class="form-label small mb-1">${t("to")}</label><input type="date" class="form-control form-control-sm f-to" value="${today()}"></div>
-    <div class="col-auto"><button class="btn btn-sm btn-brand f-go">${t("show")}</button></div>
-    <div class="col text-end f-sum"></div>${extra}</div></div>`);
+    <div class="col-6 col-md-auto"><label class="form-label small mb-1">${t("from")}</label><input type="date" class="form-control form-control-sm f-from" value="${monthStart()}"></div>
+    <div class="col-6 col-md-auto"><label class="form-label small mb-1">${t("to")}</label><input type="date" class="form-control form-control-sm f-to" value="${today()}"></div>
+    <div class="col-12 col-md-auto"><button class="btn btn-brand f-go w-100">${t("show")}</button></div>
+    <div class="col-12 col-md text-md-end f-sum"></div>${extra}</div></div>`);
   const go = () => onGo(box.querySelector(".f-from").value, box.querySelector(".f-to").value);
   box.querySelector(".f-go").addEventListener("click", go);
   return go;

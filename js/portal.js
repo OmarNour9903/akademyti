@@ -1,5 +1,5 @@
-import { applyI18n, toggleLang } from "./i18n.js?v=20261126234105";
-import { requireSession, logout } from "./session.js?v=20261126234105";
+import { applyI18n, toggleLang } from "./i18n.js?v=20261126234314";
+import { requireSession, logout } from "./session.js?v=20261126234314";
 
 applyI18n();
 document.getElementById("langBtn").addEventListener("click", toggleLang);

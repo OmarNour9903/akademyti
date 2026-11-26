@@ -1,6 +1,6 @@
-import { auth, authMod, fs, createAccount } from "./firebase.js?v=20261126234105";
-import { userRef, session } from "./data.js?v=20261126234105";
-import { UserError, isPreview } from "./util.js?v=20261126234105";
+import { auth, authMod, fs, createAccount } from "./firebase.js?v=20261126234314";
+import { userRef, session } from "./data.js?v=20261126234314";
+import { UserError, isPreview } from "./util.js?v=20261126234314";
 
 // حساب دخول لطالب أو محاضر (البوابة)
 export async function createLogin(type, refId, name, email, password) {

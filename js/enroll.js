@@ -1,11 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126234105";
-import { t, currentLang } from "./i18n.js?v=20261126234105";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126234105";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126234105";
-import { can, hasSpecial } from "./perms.js?v=20261126234105";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126234105";
-import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126234105";
+import { db, fs } from "./firebase.js?v=20261126234314";
+import { t, currentLang } from "./i18n.js?v=20261126234314";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261126234314";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126234314";
+import { can, hasSpecial } from "./perms.js?v=20261126234314";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261126234314";
+import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126234314";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -150,7 +150,7 @@ export function installmentsTable(e, { selectable = false } = {}) {
       ${selectable ? `<td><input class="form-check-input" type="radio" name="instNo" value="${i.no}" ${left <= 0 ? "disabled" : ""} data-left="${left}"></td>` : ""}
       <td>${i.no}</td><td dir="ltr" class="text-end">${esc(i.dueDate || "-")}</td><td>${fmtMoney(i.amount)}</td><td>${fmtMoney(i.paid || 0)}</td><td class="fw-semibold">${fmtMoney(left)}</td><td>${instBadge(st)}</td></tr>`;
   }).join("");
-  return `<div class="table-responsive"><table class="table table-sm align-middle mb-2">
+  return `<div class="table-responsive"><table class="table table-sm align-middle mb-2 no-stack inst-table">
     <thead><tr>${selectable ? "<th></th>" : ""}<th>#</th><th>${t("due_date")}</th><th>${t("amount")}</th><th>${t("collected")}</th><th>${t("left")}</th><th>${t("status")}</th></tr></thead>
     <tbody>${rows}</tbody></table></div>
     <div class="totals-bar">

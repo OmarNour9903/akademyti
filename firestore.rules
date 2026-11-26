@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    // مالك المنصة — لازم يطابق OWNER_EMAIL في js/config.js
+    function isOwner() { return signedIn() && request.auth.token.email == 'omarnour992003@gmail.com'; }
+    function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function hasUser() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function tenantActive(t) { return get(/databases/$(database)/documents/tenants/$(t)).data.status == 'active'; }
+    function inTenant(t) { return hasUser() && userDoc().data.tenantId == t && userDoc().data.status == 'active' && tenantActive(t); }
+    function isTenantAdmin(t) { return inTenant(t) && userDoc().data.type == 'admin'; }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isOwner() || isTenantAdmin(resource.data.tenantId));
+      allow create: if isOwner()
+        || (isTenantAdmin(request.resource.data.tenantId) && request.resource.data.type in ['employee', 'student', 'instructor', 'admin']);
+      allow update: if isOwner()
+        || (isTenantAdmin(resource.data.tenantId) && request.resource.data.tenantId == resource.data.tenantId);
+      allow delete: if false;
+    }
+
+    match /tenants/{t} {
+      allow read: if isOwner() || inTenant(t);
+      allow create: if isOwner();
+      allow update: if isOwner()
+        || (isTenantAdmin(t) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'plan', 'adminUid']));
+      allow delete: if false;
+
+      match /settings/general {
+        allow create: if isOwner();
+      }
+
+      // المرحلة 0: مدير الأكاديمية بس. هتتفصّل بالصلاحيات في المرحلة 1
+      match /{document=**} {
+        allow read, write: if isTenantAdmin(t);
+      }
+    }
+  }
+}

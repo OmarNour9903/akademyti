@@ -1,0 +1,42 @@
+:root {
+  --brand: #4f46e5;
+  --brand-dark: #3730a3;
+  --bg-soft: #f5f6fb;
+  --sidebar-w: 250px;
+}
+body { font-family: "Cairo", system-ui, sans-serif; background: var(--bg-soft); min-height: 100vh; }
+.text-brand { color: var(--brand); }
+.btn-brand { background: var(--brand); color: #fff; border: none; }
+.btn-brand:hover, .btn-brand:focus { background: var(--brand-dark); color: #fff; }
+
+/* صفحة الدخول */
+.auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.auth-card { width: 100%; max-width: 420px; border: none; border-radius: 1rem; box-shadow: 0 10px 40px rgba(79, 70, 229, .12); }
+.auth-logo { width: 64px; height: 64px; border-radius: 1rem; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem; }
+.lang-switch { position: fixed; top: 1rem; inset-inline-end: 1rem; }
+
+/* الهيكل الرئيسي */
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar { width: var(--sidebar-w); background: #1e1b4b; color: #c7d2fe; flex-shrink: 0; display: flex; flex-direction: column; }
+.sidebar .brand { color: #fff; font-weight: 700; font-size: 1.3rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.sidebar .nav-link { color: #c7d2fe; padding: .7rem 1.5rem; display: flex; gap: .75rem; align-items: center; border-radius: 0; }
+.sidebar .nav-link:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+.sidebar .nav-link.active { background: var(--brand); color: #fff; }
+.main { flex: 1; min-width: 0; }
+.topbar { background: #fff; border-bottom: 1px solid #e5e7eb; padding: .75rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+.topbar .search { max-width: 380px; }
+.content { padding: 1.5rem; }
+
+.stat-card { border: none; border-radius: 1rem; box-shadow: 0 2px 12px rgba(0, 0, 0, .04); }
+.stat-icon { width: 48px; height: 48px; border-radius: .75rem; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+.stat-icon.c1 { background: #eef2ff; color: var(--brand); }
+.stat-icon.c2 { background: #ecfdf5; color: #059669; }
+.stat-icon.c3 { background: #fff7ed; color: #ea580c; }
+.stat-value { font-size: 1.8rem; font-weight: 700; }
+.card-soft { border: none; border-radius: 1rem; box-shadow: 0 2px 12px rgba(0, 0, 0, .04); }
+
+@media (max-width: 991.98px) {
+  .sidebar { position: fixed; inset-block: 0; inset-inline-start: 0; z-index: 1040; transform: translateX(100%); transition: transform .2s; }
+  [dir="ltr"] .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+}

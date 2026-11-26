@@ -1,4 +1,4 @@
-import { firebaseConfig, SDK } from "./config.js?v=20261126230052";
+import { firebaseConfig, SDK } from "./config.js?v=20261126230347";
 const { initializeApp, deleteApp } = await import(`${SDK}/firebase-app.js`);
 const authMod = await import(`${SDK}/firebase-auth.js`);
 const fs = await import(`${SDK}/firebase-firestore.js`);

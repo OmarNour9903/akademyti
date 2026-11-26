@@ -1,6 +1,6 @@
-import { db, fs, createAccount } from "./firebase.js?v=20261126230052";
-import { applyI18n, toggleLang, t, formatDate } from "./i18n.js?v=20261126230052";
-import { requireSession, logout } from "./session.js?v=20261126230052";
+import { db, fs, createAccount } from "./firebase.js?v=20261126230347";
+import { applyI18n, toggleLang, t, formatDate } from "./i18n.js?v=20261126230347";
+import { requireSession, logout } from "./session.js?v=20261126230347";
 
 applyI18n();
 document.getElementById("langBtn").addEventListener("click", () => { toggleLang(); loadTenants(); });
@@ -32,7 +32,7 @@ async function loadTenants() {
     const act = tr.insertCell();
     const btn = document.createElement("button");
     btn.className = "btn btn-sm btn-outline-secondary";
-    btn.textContent = x.status === "active" ? t("suspended") : t("active");
+    btn.textContent = x.status === "active" ? t("suspend") : t("activate");
     btn.addEventListener("click", async () => {
       await fs.updateDoc(fs.doc(db, "tenants", d.id), { status: x.status === "active" ? "suspended" : "active" });
       loadTenants();

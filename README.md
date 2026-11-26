@@ -4,7 +4,7 @@
 
 - المتطلبات الكاملة: [docs/SPEC.md](docs/SPEC.md)
 - التقنية: HTML + CSS + JavaScript (ES Modules) + Bootstrap 5 RTL + Firebase (Auth + Firestore)
-- الاستضافة: Firebase Hosting (الريبو Private)
+- الاستضافة: GitHub Pages — https://omarnour9903.github.io/akademyti/
 
 ## الصفحات
 | الصفحة | لمين |

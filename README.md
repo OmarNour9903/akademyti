@@ -4,7 +4,7 @@
 
 - المتطلبات الكاملة: [docs/SPEC.md](docs/SPEC.md)
 - التقنية: HTML + CSS + JavaScript (ES Modules) + Bootstrap 5 RTL + Firebase (Auth + Firestore)
-- الاستضافة: GitHub Pages
+- الاستضافة: Firebase Hosting (الريبو Private)
 
 ## الصفحات
 | الصفحة | لمين |

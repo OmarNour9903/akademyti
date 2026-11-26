@@ -89,3 +89,4 @@ body { font-family: "Cairo", system-ui, sans-serif; background: var(--bg-soft); 
 .badge.tx-transfer { background: #e0e7ff; color: #3730a3; }
 .badge.tx-reversal { background: #f3f4f6; color: #111827; }
 .badge.tx-income { background: #dcfce7; color: #166534; }
+.badge.inst-cancelled { background: #f3f4f6; color: #9ca3af; }

@@ -1,9 +1,9 @@
-import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126231907";
-import { requireSession, logout } from "./session.js?v=20261126231907";
-import { setSession } from "./data.js?v=20261126231907";
-import { can } from "./perms.js?v=20261126231907";
-import { applyPreview, openPicker, exitPreview } from "./viewas.js?v=20261126231907";
-import { setPreviewMode, toast } from "./util.js?v=20261126231907";
+import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126232651";
+import { requireSession, logout } from "./session.js?v=20261126232651";
+import { setSession } from "./data.js?v=20261126232651";
+import { can } from "./perms.js?v=20261126232651";
+import { applyPreview, openPicker, exitPreview } from "./viewas.js?v=20261126232651";
+import { setPreviewMode, toast } from "./util.js?v=20261126232651";
 
 applyI18n();
 document.getElementById("logoutBtn").addEventListener("click", logout);
@@ -30,21 +30,21 @@ document.getElementById("userName").textContent = session.profile.name;
 document.getElementById("roleBadge").textContent = preview ? t("previewing") : t(isAdmin ? "role_admin" : "role_employee");
 
 const views = {
-  dashboard: { load: () => import("./views/dashboard.js?v=20261126231907") },
-  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126231907") },
-  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126231907"), detail: true },
-  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126231907") },
-  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126231907"), detail: true },
-  students: { perm: "students", load: () => import("./views/students.js?v=20261126231907") },
-  student: { perm: "students", load: () => import("./views/students.js?v=20261126231907"), detail: true },
-  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126231907") },
-  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126231907"), detail: true },
-  departments: { admin: true, load: () => import("./views/departments.js?v=20261126231907") },
-  employees: { admin: true, load: () => import("./views/employees.js?v=20261126231907") },
-  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126231907") },
-  finance: { load: () => import("./views/finance.js?v=20261126231907") },
-  settings: { admin: true, load: () => import("./views/settings.js?v=20261126231907") },
-  trash: { admin: true, load: () => import("./views/trash.js?v=20261126231907") }
+  dashboard: { load: () => import("./views/dashboard.js?v=20261126232651") },
+  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126232651") },
+  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126232651"), detail: true },
+  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126232651") },
+  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126232651"), detail: true },
+  students: { perm: "students", load: () => import("./views/students.js?v=20261126232651") },
+  student: { perm: "students", load: () => import("./views/students.js?v=20261126232651"), detail: true },
+  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126232651") },
+  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126232651"), detail: true },
+  departments: { admin: true, load: () => import("./views/departments.js?v=20261126232651") },
+  employees: { admin: true, load: () => import("./views/employees.js?v=20261126232651") },
+  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126232651") },
+  finance: { load: () => import("./views/finance.js?v=20261126232651") },
+  settings: { admin: true, load: () => import("./views/settings.js?v=20261126232651") },
+  trash: { admin: true, load: () => import("./views/trash.js?v=20261126232651") }
 };
 
 // إخفاء الأجزاء اللي المستخدم مالوش صلاحية عليها
@@ -88,4 +88,4 @@ document.getElementById("langBtn").addEventListener("click", () => {
 });
 window.addEventListener("hashchange", show);
 show();
-import("./search.js?v=20261126231907").then((m) => m.initSearch(session));
+import("./search.js?v=20261126232651").then((m) => m.initSearch(session));

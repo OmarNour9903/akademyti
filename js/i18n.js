@@ -364,7 +364,11 @@ const dict = {
     dues_general_paid: "مبالغ اتصرفت من غير مجموعة",
     dues_salary_note: "نظام مرتب شهري:",
     dues_hourly_note: "نظام بالساعة (الساعات هتتحسب تلقائي مع المحاضرات في المرحلة 3). سعر الساعة:",
-    instructor_pay_cat: "أجور محاضرين"
+    instructor_pay_cat: "أجور محاضرين",
+    transactions: "الحركات المالية",
+    treasuries_entity: "الخزن",
+    expenseCategories: "بنود المصروفات",
+    inst_cancelled: "ملغي"
   },
   en: {
     brand: "Akademyti",
@@ -731,7 +735,11 @@ const dict = {
     dues_general_paid: "Paid without a group",
     dues_salary_note: "Monthly salary:",
     dues_hourly_note: "Hourly (hours will be computed from sessions in phase 3). Rate:",
-    instructor_pay_cat: "Instructor pay"
+    instructor_pay_cat: "Instructor pay",
+    transactions: "Financial entries",
+    treasuries_entity: "Treasuries",
+    expenseCategories: "Expense items",
+    inst_cancelled: "Cancelled"
   }
 };
 

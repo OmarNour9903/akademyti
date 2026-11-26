@@ -1,9 +1,9 @@
 // محرك عام لصفحات القوايم والفورمز (كورسات، طلاب، محاضرين، مجموعات)
-import { db, fs } from "./firebase.js?v=20261126231907";
-import { t } from "./i18n.js?v=20261126231907";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126231907";
-import { col, ref, audit, nextEntityCode, softDelete, session } from "./data.js?v=20261126231907";
-import { can } from "./perms.js?v=20261126231907";
+import { db, fs } from "./firebase.js?v=20261126232651";
+import { t } from "./i18n.js?v=20261126232651";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126232651";
+import { col, ref, audit, nextEntityCode, softDelete, session } from "./data.js?v=20261126232651";
+import { can } from "./perms.js?v=20261126232651";
 
 export const STATUS_BADGE = {
   active: "text-bg-success", available: "text-bg-success", open: "text-bg-success", running: "text-bg-primary",
@@ -74,7 +74,8 @@ export function crudView(cfg) {
     root.querySelector("#arch").addEventListener("change", (e) => { showArchived = e.target.checked; reload(); });
     const snap = await fs.getDocs(fs.query(col(cfg.coll), ...(cfg.constraints || [])));
     let items = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.deleted && (showArchived || x.status !== "archived"));
-    items.sort((a, b) => (b.code || "").localeCompare(a.code || ""));
+    const ts = (x) => (x.createdAt && x.createdAt.seconds) || 0;
+    items.sort((a, b) => ts(b) - ts(a) || (b.code || "").localeCompare(a.code || ""));
     const filterInput = root.querySelector(".list-filter");
     const body = root.querySelector("#rows");
     const draw = () => {

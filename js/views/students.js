@@ -1,10 +1,10 @@
-import { t } from "../i18n.js?v=20261126231907";
-import { esc, toast } from "../util.js?v=20261126231907";
-import { session } from "../data.js?v=20261126231907";
-import { can, hasSpecial } from "../perms.js?v=20261126231907";
-import { crudView, statusBadge, infoGrid, getOne } from "../crud.js?v=20261126231907";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126231907";
-import { studentEnrollments, studentPayments } from "../enroll.js?v=20261126231907";
+import { t } from "../i18n.js?v=20261126232651";
+import { esc, toast } from "../util.js?v=20261126232651";
+import { session } from "../data.js?v=20261126232651";
+import { can, hasSpecial } from "../perms.js?v=20261126232651";
+import { crudView, statusBadge, infoGrid, getOne } from "../crud.js?v=20261126232651";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126232651";
+import { studentEnrollments, studentPayments } from "../enroll.js?v=20261126232651";
 
 const statuses = ["active", "suspended", "archived"];
 
@@ -80,5 +80,5 @@ export async function renderDetail(root, id) {
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(s.email); toast(t("reset_sent_to") + " " + s.email); });
   studentEnrollments(root.querySelector("#enrollBox"), s, reload);
   studentPayments(root.querySelector("#payBox"), s);
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126231907").then((m) => m.openCreateLogin("students", "student", s, reload)));
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126232651").then((m) => m.openCreateLogin("students", "student", s, reload)));
 }

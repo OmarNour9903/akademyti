@@ -1,10 +1,10 @@
 // مستحقات المحاضر: النسبة بتتحسب على المحصّل فعلاً من طلاب المجموعة
-import { fs } from "./firebase.js?v=20261126231907";
-import { t } from "./i18n.js?v=20261126231907";
-import { esc } from "./util.js?v=20261126231907";
-import { col, session } from "./data.js?v=20261126231907";
-import { can } from "./perms.js?v=20261126231907";
-import { fmtMoney } from "./crud.js?v=20261126231907";
+import { fs } from "./firebase.js?v=20261126232651";
+import { t } from "./i18n.js?v=20261126232651";
+import { esc } from "./util.js?v=20261126232651";
+import { col, session } from "./data.js?v=20261126232651";
+import { can } from "./perms.js?v=20261126232651";
+import { fmtMoney } from "./crud.js?v=20261126232651";
 
 const r2 = (n) => Math.round(n * 100) / 100;
 
@@ -19,7 +19,9 @@ export async function instructorDues(box, inst, groups) {
     let base = null, due = null;
     if (inst.payType === "percentage") {
       const ps = await fs.getDocs(fs.query(col("payments"), fs.where("groupId", "==", g.id)));
-      base = r2(ps.docs.map((d) => d.data()).filter((p) => !p.reversedBy).reduce((s, p) => s + p.amount, 0));
+      const refunds = await fs.getDocs(fs.query(col("transactions"), fs.where("groupId", "==", g.id)));
+      const refunded = refunds.docs.map((d) => d.data()).filter((x) => x.type === "refund" && !x.reversedBy).reduce((s, x) => s + x.amount, 0);
+      base = r2(ps.docs.map((d) => d.data()).filter((p) => !p.reversedBy).reduce((s, p) => s + p.amount, 0) - refunded);
       due = r2(base * (Number(inst.payAmount) || 0) / 100);
     } else if (inst.payType === "perStudent") {
       const es = await fs.getDocs(fs.query(col("enrollments"), fs.where("groupId", "==", g.id), fs.where("status", "==", "active")));
@@ -44,7 +46,7 @@ export async function instructorDues(box, inst, groups) {
     ${general ? `<p class="small">${t("dues_general_paid")}: <b>${fmtMoney(general)}</b></p>` : ""}
     ${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="" data-amt=""><i class="bi bi-cash"></i> ${t("pay_out_general")}</button>` : ""}`;
   box.querySelectorAll("[data-payout]").forEach((b) => b.addEventListener("click", async () => {
-    const { openExpense } = await import("./views/finance.js?v=20261126231907");
+    const { openExpense } = await import("./views/finance.js?v=20261126232651");
     const g = groups.find((x) => x.id === b.dataset.payout);
     openExpense(() => instructorDues(box, inst, groups), {
       categoryName: t("instructor_pay_cat"), instructorId: inst.id, groupId: g ? g.id : "", amount: b.dataset.amt,

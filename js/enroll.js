@@ -1,11 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126231907";
-import { t, currentLang } from "./i18n.js?v=20261126231907";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126231907";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126231907";
-import { can, hasSpecial } from "./perms.js?v=20261126231907";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126231907";
-import { myTreasuries, recordTx, balRef } from "./money.js?v=20261126231907";
+import { db, fs } from "./firebase.js?v=20261126232651";
+import { t, currentLang } from "./i18n.js?v=20261126232651";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261126232651";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126232651";
+import { can, hasSpecial } from "./perms.js?v=20261126232651";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261126232651";
+import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126232651";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -21,7 +21,7 @@ export function instState(i) {
 const instBadge = (s) => `<span class="badge inst-${s}">${t("inst_" + s)}</span>`;
 
 export function enrollmentTotals(e) {
-  const insts = e.installments || [];
+  const insts = e.status === "cancelled" ? [] : e.installments || [];
   const overdue = insts.filter((i) => instState(i) === "overdue");
   return {
     total: Number(e.finalPrice) || 0, paid: Number(e.paid) || 0,
@@ -139,9 +139,9 @@ function readPlan(form) {
 export function installmentsTable(e, { selectable = false } = {}) {
   const tot = enrollmentTotals(e);
   const rows = (e.installments || []).map((i) => {
-    const st = instState(i);
+    const st = e.status === "cancelled" && instState(i) !== "paid" ? "cancelled" : instState(i);
     const left = round2(i.amount - (i.paid || 0));
-    return `<tr class="${st === "overdue" ? "table-danger" : ""}">
+    return `<tr class="${st === "overdue" ? "table-danger" : st === "cancelled" ? "text-muted" : ""}">
       ${selectable ? `<td><input class="form-check-input" type="radio" name="instNo" value="${i.no}" ${left <= 0 ? "disabled" : ""} data-left="${left}"></td>` : ""}
       <td>${i.no}</td><td dir="ltr" class="text-end">${esc(i.dueDate || "-")}</td><td>${fmtMoney(i.amount)}</td><td>${fmtMoney(i.paid || 0)}</td><td class="fw-semibold">${fmtMoney(left)}</td><td>${instBadge(st)}</td></tr>`;
   }).join("");
@@ -158,7 +158,8 @@ export function installmentsTable(e, { selectable = false } = {}) {
 // ===== تسجيل دفعة =====
 export async function openPayment(e, done) {
   const S = session();
-  const treasuries = await myTreasuries("deposit");
+  let treasuries = await myTreasuries("deposit");
+  if (S.role === "admin" && await migrateLegacy(treasuries)) treasuries = await myTreasuries("deposit");
   if (!treasuries.length) { toast(t("no_deposit_treasury"), "warning"); return; }
   const methods = ["cash", "transfer", "vodafone", "instapay"];
   const html = `

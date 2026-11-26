@@ -1,11 +1,11 @@
-import { db, fs } from "../firebase.js?v=20261126231907";
-import { t } from "../i18n.js?v=20261126231907";
-import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261126231907";
-import { col, ref, audit, session, listActive } from "../data.js?v=20261126231907";
-import { can } from "../perms.js?v=20261126231907";
-import { fmtMoney } from "../crud.js?v=20261126231907";
-import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261126231907";
-import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS } from "../money.js?v=20261126231907";
+import { db, fs } from "../firebase.js?v=20261126232651";
+import { t } from "../i18n.js?v=20261126232651";
+import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261126232651";
+import { col, ref, audit, session, listActive } from "../data.js?v=20261126232651";
+import { can } from "../perms.js?v=20261126232651";
+import { fmtMoney } from "../crud.js?v=20261126232651";
+import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261126232651";
+import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS, migrateLegacy } from "../money.js?v=20261126232651";
 
 let tab = "payments";
 const monthStart = () => today().slice(0, 8) + "01";
@@ -13,20 +13,7 @@ const monthStart = () => today().slice(0, 8) + "01";
 export async function render(root) {
   const S = session();
   let mine = await myTreasuries();
-  if (S.role === "admin") {
-    // نقل الخزن القديمة (اللي رصيدها جوه مستند الخزنة) للنظام الجديد
-    const legacy = mine.filter((x) => x.balance != null);
-    for (const x of legacy) {
-      try {
-        const batch = fs.writeBatch(db);
-        batch.set(balRef(x.id), { balance: x.balance || 0, lastTxId: "", lastTxColl: "" });
-        batch.set(ref("treasuryNames", x.id), { name: x.name });
-        batch.update(ref("treasuries", x.id), { balance: fs.deleteField(), lastTxId: fs.deleteField(), members: x.members || [], access: x.access || {} });
-        await batch.commit();
-      } catch (e) { console.error("migrate treasury", e); }
-    }
-    if (legacy.length) mine = await myTreasuries();
-  }
+  if (S.role === "admin" && await migrateLegacy(mine)) mine = await myTreasuries();
   const tabs = [
     can(S, "payments", "view") && ["payments", "bi-receipt", "payments_tab"],
     (can(S, "expenses", "view") || can(S, "expenses", "add")) && ["expenses", "bi-wallet2", "expenses_tab"],

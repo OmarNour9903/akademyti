@@ -1,8 +1,8 @@
 // "عين" المدير: يشوف السيستم بصلاحيات قسم أو موظف معيّن (معاينة للقراءة بس)
-import { t } from "./i18n.js?v=20261126231907";
-import { esc, openModal } from "./util.js?v=20261126231907";
-import { listActive } from "./data.js?v=20261126231907";
-import { effective } from "./perms.js?v=20261126231907";
+import { t } from "./i18n.js?v=20261126232651";
+import { esc, openModal } from "./util.js?v=20261126232651";
+import { listActive } from "./data.js?v=20261126232651";
+import { effective } from "./perms.js?v=20261126232651";
 
 const KEY = "viewAs";
 
@@ -44,7 +44,7 @@ export async function openPicker(session) {
     } else {
       const e = emps.find((x) => x.id === id);
       const d = depts.find((x) => x.id === e.departmentId);
-      p = { kind, id, name: `${e.code} ${e.name}`, ...effective(d, e.overrides || {}, e.specialOverrides || {}) };
+      p = { kind, id, uid: e.uid || "", name: `${e.code} ${e.name}`, ...effective(d, e.overrides || {}, e.specialOverrides || {}) };
     }
     p.tenantId = session.tenant.id;
     try { sessionStorage.setItem(KEY, JSON.stringify(p)); } catch (e) { /* ignore */ }

@@ -1,11 +1,11 @@
-import { fs } from "../firebase.js?v=20261126234314";
-import { t } from "../i18n.js?v=20261126234314";
-import { esc, toast } from "../util.js?v=20261126234314";
-import { col, session } from "../data.js?v=20261126234314";
-import { can, hasSpecial } from "../perms.js?v=20261126234314";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126234314";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126234314";
-import { groupsTable } from "./groups.js?v=20261126234314";
+import { fs } from "../firebase.js?v=20261126234443";
+import { t } from "../i18n.js?v=20261126234443";
+import { esc, toast } from "../util.js?v=20261126234443";
+import { col, session } from "../data.js?v=20261126234443";
+import { can, hasSpecial } from "../perms.js?v=20261126234443";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126234443";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126234443";
+import { groupsTable } from "./groups.js?v=20261126234443";
 
 const statuses = ["active", "suspended", "archived"];
 const payTypes = ["salary", "percentage", "perStudent", "hourly"];
@@ -77,10 +77,10 @@ export async function renderDetail(root, id) {
   const reload = () => renderDetail(root, id);
   root.querySelector("#editBtn")?.addEventListener("click", () => view.openForm(x, reload));
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(x.email); toast(t("reset_sent_to") + " " + x.email); });
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126234314").then((m) => m.openCreateLogin("instructors", "instructor", x, reload)));
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126234443").then((m) => m.openCreateLogin("instructors", "instructor", x, reload)));
   if (!can(S, "groups", "view")) { root.querySelector("#groupsBox").textContent = t("no_permission"); root.querySelector("#duesBox").textContent = t("no_permission"); return; }
   const snap = await fs.getDocs(fs.query(col("groups"), fs.where("instructorIds", "array-contains", id)));
   const groups = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((g) => !g.deleted);
   root.querySelector("#groupsBox").innerHTML = groupsTable(groups);
-  import("../dues.js?v=20261126234314").then((m) => m.instructorDues(root.querySelector("#duesBox"), x, groups)).catch((e) => console.error(e));
+  import("../dues.js?v=20261126234443").then((m) => m.instructorDues(root.querySelector("#duesBox"), x, groups)).catch((e) => console.error(e));
 }

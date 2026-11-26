@@ -295,3 +295,4 @@ td.font-monospace { color: var(--ticket); font-size: .85rem; }
   .inst-table th, .inst-table td { padding: .45rem .25rem !important; white-space: nowrap; }
   .inst-table .badge { font-size: .7rem; padding: .3em .5em; }
 }
+.badge.font-monospace, .code-chip, td.font-monospace, td[dir="ltr"] { white-space: nowrap; }

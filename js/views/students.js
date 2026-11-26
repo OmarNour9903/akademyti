@@ -1,10 +1,10 @@
-import { t } from "../i18n.js?v=20261126230347";
-import { esc, toast } from "../util.js?v=20261126230347";
-import { session } from "../data.js?v=20261126230347";
-import { can, hasSpecial } from "../perms.js?v=20261126230347";
-import { crudView, statusBadge, infoGrid, getOne } from "../crud.js?v=20261126230347";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126230347";
-import { studentEnrollments, studentPayments } from "../enroll.js?v=20261126230347";
+import { t } from "../i18n.js?v=20261126230710";
+import { esc, toast } from "../util.js?v=20261126230710";
+import { session } from "../data.js?v=20261126230710";
+import { can, hasSpecial } from "../perms.js?v=20261126230710";
+import { crudView, statusBadge, infoGrid, getOne } from "../crud.js?v=20261126230710";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261126230710";
+import { studentEnrollments, studentPayments } from "../enroll.js?v=20261126230710";
 
 const statuses = ["active", "suspended", "archived"];
 
@@ -78,5 +78,7 @@ export async function renderDetail(root, id) {
   const reload = () => renderDetail(root, id);
   root.querySelector("#editBtn")?.addEventListener("click", () => view.openForm(s, reload));
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(s.email); toast(t("reset_sent_to") + " " + s.email); });
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126230347").then((m) => m.openCreateLogin("students", "student", s, reload)));
+  studentEnrollments(root.querySelector("#enrollBox"), s, reload);
+  studentPayments(root.querySelector("#payBox"), s);
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261126230710").then((m) => m.openCreateLogin("students", "student", s, reload)));
 }

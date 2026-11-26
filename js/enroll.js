@@ -1,12 +1,14 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126230347";
-import { t, currentLang } from "./i18n.js?v=20261126230347";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126230347";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126230347";
-import { can, hasSpecial } from "./perms.js?v=20261126230347";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126230347";
+import { db, fs } from "./firebase.js?v=20261126230710";
+import { t, currentLang } from "./i18n.js?v=20261126230710";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261126230710";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126230710";
+import { can, hasSpecial } from "./perms.js?v=20261126230710";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261126230710";
 
-export const today = () => new Date().toISOString().slice(0, 10);
+// تاريخ النهارده بالتوقيت المحلي (مش UTC)
+const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+export const today = () => localISO(new Date());
 const round2 = (n) => Math.round(Number(n) * 100) / 100;
 
 export function instState(i) {
@@ -35,7 +37,7 @@ function splitPlan(total, count, firstDate) {
   const d0 = firstDate ? new Date(firstDate) : new Date();
   for (let k = 0; k < n; k++) {
     const d = new Date(d0); d.setMonth(d.getMonth() + k);
-    out.push({ no: k + 1, amount: k === n - 1 ? round2(total - base * (n - 1)) : base, dueDate: d.toISOString().slice(0, 10), paid: 0 });
+    out.push({ no: k + 1, amount: k === n - 1 ? round2(total - base * (n - 1)) : base, dueDate: localISO(d), paid: 0 });
   }
   return out;
 }

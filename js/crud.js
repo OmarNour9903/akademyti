@@ -1,9 +1,9 @@
 // محرك عام لصفحات القوايم والفورمز (كورسات، طلاب، محاضرين، مجموعات)
-import { db, fs } from "./firebase.js?v=20261126230347";
-import { t } from "./i18n.js?v=20261126230347";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126230347";
-import { col, ref, audit, nextCode, softDelete, session } from "./data.js?v=20261126230347";
-import { can } from "./perms.js?v=20261126230347";
+import { db, fs } from "./firebase.js?v=20261126230710";
+import { t } from "./i18n.js?v=20261126230710";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261126230710";
+import { col, ref, audit, nextCode, softDelete, session } from "./data.js?v=20261126230710";
+import { can } from "./perms.js?v=20261126230710";
 
 export const STATUS_BADGE = {
   active: "text-bg-success", available: "text-bg-success", open: "text-bg-success", running: "text-bg-primary",

@@ -1,7 +1,7 @@
-import { db, fs } from "../firebase.js";
-import { t } from "../i18n.js";
-import { esc, toast, confirmBox } from "../util.js";
-import { col, ref, userRef, restore, purge } from "../data.js";
+import { db, fs } from "../firebase.js?v=20261126223043";
+import { t } from "../i18n.js?v=20261126223043";
+import { esc, toast, confirmBox } from "../util.js?v=20261126223043";
+import { col, ref, userRef, restore, purge } from "../data.js?v=20261126223043";
 
 // الأجزاء اللي بتدخل السلة (هتزيد مع كل مرحلة)
 const SOURCES = [

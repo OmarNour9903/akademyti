@@ -1,7 +1,7 @@
-import { applyI18n, toggleLang, t } from "./i18n.js";
-import { requireSession, logout } from "./session.js";
-import { setSession } from "./data.js";
-import { can } from "./perms.js";
+import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126223043";
+import { requireSession, logout } from "./session.js?v=20261126223043";
+import { setSession } from "./data.js?v=20261126223043";
+import { can } from "./perms.js?v=20261126223043";
 
 applyI18n();
 document.getElementById("logoutBtn").addEventListener("click", logout);
@@ -15,11 +15,11 @@ document.getElementById("userName").textContent = session.profile.name;
 document.getElementById("roleBadge").textContent = t(isAdmin ? "role_admin" : "role_employee");
 
 const views = {
-  dashboard: { load: () => import("./views/dashboard.js") },
-  departments: { admin: true, load: () => import("./views/departments.js") },
-  employees: { admin: true, load: () => import("./views/employees.js") },
-  audit: { perm: "auditLog", load: () => import("./views/audit.js") },
-  trash: { admin: true, load: () => import("./views/trash.js") }
+  dashboard: { load: () => import("./views/dashboard.js?v=20261126223043") },
+  departments: { admin: true, load: () => import("./views/departments.js?v=20261126223043") },
+  employees: { admin: true, load: () => import("./views/employees.js?v=20261126223043") },
+  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126223043") },
+  trash: { admin: true, load: () => import("./views/trash.js?v=20261126223043") }
 };
 
 // إخفاء الأجزاء اللي المستخدم مالوش صلاحية عليها

@@ -1,7 +1,7 @@
-import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126224220";
-import { requireSession, logout } from "./session.js?v=20261126224220";
-import { setSession } from "./data.js?v=20261126224220";
-import { can } from "./perms.js?v=20261126224220";
+import { applyI18n, toggleLang, t } from "./i18n.js?v=20261126224610";
+import { requireSession, logout } from "./session.js?v=20261126224610";
+import { setSession } from "./data.js?v=20261126224610";
+import { can } from "./perms.js?v=20261126224610";
 
 applyI18n();
 document.getElementById("logoutBtn").addEventListener("click", logout);
@@ -15,19 +15,19 @@ document.getElementById("userName").textContent = session.profile.name;
 document.getElementById("roleBadge").textContent = t(isAdmin ? "role_admin" : "role_employee");
 
 const views = {
-  dashboard: { load: () => import("./views/dashboard.js?v=20261126224220") },
-  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126224220") },
-  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126224220"), detail: true },
-  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126224220") },
-  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126224220"), detail: true },
-  students: { perm: "students", load: () => import("./views/students.js?v=20261126224220") },
-  student: { perm: "students", load: () => import("./views/students.js?v=20261126224220"), detail: true },
-  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126224220") },
-  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126224220"), detail: true },
-  departments: { admin: true, load: () => import("./views/departments.js?v=20261126224220") },
-  employees: { admin: true, load: () => import("./views/employees.js?v=20261126224220") },
-  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126224220") },
-  trash: { admin: true, load: () => import("./views/trash.js?v=20261126224220") }
+  dashboard: { load: () => import("./views/dashboard.js?v=20261126224610") },
+  courses: { perm: "courses", load: () => import("./views/courses.js?v=20261126224610") },
+  course: { perm: "courses", load: () => import("./views/courses.js?v=20261126224610"), detail: true },
+  groups: { perm: "groups", load: () => import("./views/groups.js?v=20261126224610") },
+  group: { perm: "groups", load: () => import("./views/groups.js?v=20261126224610"), detail: true },
+  students: { perm: "students", load: () => import("./views/students.js?v=20261126224610") },
+  student: { perm: "students", load: () => import("./views/students.js?v=20261126224610"), detail: true },
+  instructors: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126224610") },
+  instructor: { perm: "instructors", load: () => import("./views/instructors.js?v=20261126224610"), detail: true },
+  departments: { admin: true, load: () => import("./views/departments.js?v=20261126224610") },
+  employees: { admin: true, load: () => import("./views/employees.js?v=20261126224610") },
+  audit: { perm: "auditLog", load: () => import("./views/audit.js?v=20261126224610") },
+  trash: { admin: true, load: () => import("./views/trash.js?v=20261126224610") }
 };
 
 // إخفاء الأجزاء اللي المستخدم مالوش صلاحية عليها
@@ -70,4 +70,4 @@ document.getElementById("langBtn").addEventListener("click", () => {
 });
 window.addEventListener("hashchange", show);
 show();
-import("./search.js?v=20261126224220").then((m) => m.initSearch(session));
+import("./search.js?v=20261126224610").then((m) => m.initSearch(session));

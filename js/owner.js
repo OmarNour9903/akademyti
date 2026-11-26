@@ -1,6 +1,6 @@
-import { db, fs, createAccount } from "./firebase.js?v=20261126224220";
-import { applyI18n, toggleLang, t, formatDate } from "./i18n.js?v=20261126224220";
-import { requireSession, logout } from "./session.js?v=20261126224220";
+import { db, fs, createAccount } from "./firebase.js?v=20261126224610";
+import { applyI18n, toggleLang, t, formatDate } from "./i18n.js?v=20261126224610";
+import { requireSession, logout } from "./session.js?v=20261126224610";
 
 applyI18n();
 document.getElementById("langBtn").addEventListener("click", () => { toggleLang(); loadTenants(); });

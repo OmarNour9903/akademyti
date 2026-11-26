@@ -1,9 +1,9 @@
-import { fs } from "../firebase.js?v=20261126224220";
-import { t } from "../i18n.js?v=20261126224220";
-import { esc, UserError } from "../util.js?v=20261126224220";
-import { col, session, nextNumber } from "../data.js?v=20261126224220";
-import { can, hasSpecial } from "../perms.js?v=20261126224220";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126224220";
+import { fs } from "../firebase.js?v=20261126224610";
+import { t } from "../i18n.js?v=20261126224610";
+import { esc, UserError } from "../util.js?v=20261126224610";
+import { col, session, nextNumber } from "../data.js?v=20261126224610";
+import { can, hasSpecial } from "../perms.js?v=20261126224610";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126224610";
 
 const statuses = ["open", "running", "finished", "cancelled", "archived"];
 let cache = { courses: [], instructors: [] };

@@ -1,8 +1,8 @@
-import { fs } from "./firebase.js?v=20261126224220";
-import { t } from "./i18n.js?v=20261126224220";
-import { esc } from "./util.js?v=20261126224220";
-import { col } from "./data.js?v=20261126224220";
-import { can } from "./perms.js?v=20261126224220";
+import { fs } from "./firebase.js?v=20261126224610";
+import { t } from "./i18n.js?v=20261126224610";
+import { esc } from "./util.js?v=20261126224610";
+import { col } from "./data.js?v=20261126224610";
+import { can } from "./perms.js?v=20261126224610";
 
 // بحث موحّد بالكود أو الاسم أو الموبايل أو الإيميل
 const SOURCES = [
@@ -30,11 +30,12 @@ export function initSearch(session) {
   let timer;
   const hide = () => res.classList.add("d-none");
   const run = async (go) => {
+    if (go) clearTimeout(timer);
     const q = box.value.trim().toLowerCase();
     if (!q) { hide(); return; }
     const all = await load(session);
     const exact = all.find((x) => (x.code || "").toLowerCase() === q);
-    if (go && exact) { location.hash = `#${exact.hash}/${exact.id}`; box.value = ""; hide(); return; }
+    if (go && exact) { clearTimeout(timer); box.value = ""; hide(); location.hash = `#${exact.hash}/${exact.id}`; return; }
     const hits = all.filter((x) => [x.code, x.name, x.phone, x.email].some((v) => String(v).toLowerCase().includes(q))).slice(0, 12);
     res.innerHTML = hits.length ? hits.map((x) => `<a class="search-item" href="#${x.hash}/${x.id}">
       <i class="bi ${x.icon}"></i><span class="badge text-bg-light font-monospace">${esc(x.code)}</span>
@@ -46,5 +47,5 @@ export function initSearch(session) {
   box.addEventListener("keydown", (e) => { if (e.key === "Enter") run(true); if (e.key === "Escape") hide(); });
   res.addEventListener("click", () => { box.value = ""; hide(); });
   document.addEventListener("click", (e) => { if (!e.target.closest(".search-wrap")) hide(); });
-  window.addEventListener("hashchange", () => { cache = null; });
+  window.addEventListener("hashchange", () => { cache = null; clearTimeout(timer); box.value = ""; hide(); });
 }

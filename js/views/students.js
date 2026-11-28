@@ -1,11 +1,11 @@
-import { t } from "../i18n.js?v=20261128080223";
-import { esc, toast } from "../util.js?v=20261128080223";
-import { session } from "../data.js?v=20261128080223";
-import { can, hasSpecial } from "../perms.js?v=20261128080223";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128080223";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261128080223";
-import { loadStudentEnrollments, loadStudentPayments, renderStudentEnrollments, renderStudentPayments, enrollmentTotals } from "../enroll.js?v=20261128080223";
-import { studentSessionsList, attStats, pctText, attBadge, loadEvaluations, effectiveAttGrade, gradeText, openEvaluation, loadDiscipline, activeSuspension, disciplineTable, bindDiscipline, openDiscipline } from "../ops.js?v=20261128080223";
+import { t } from "../i18n.js?v=20261128080337";
+import { esc, toast } from "../util.js?v=20261128080337";
+import { session } from "../data.js?v=20261128080337";
+import { can, hasSpecial } from "../perms.js?v=20261128080337";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128080337";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261128080337";
+import { loadStudentEnrollments, loadStudentPayments, renderStudentEnrollments, renderStudentPayments, enrollmentTotals } from "../enroll.js?v=20261128080337";
+import { studentSessionsList, attStats, pctText, attBadge, loadEvaluations, effectiveAttGrade, gradeText, openEvaluation, loadDiscipline, activeSuspension, disciplineTable, bindDiscipline, openDiscipline } from "../ops.js?v=20261128080337";
 
 const statuses = ["active", "suspended", "archived"];
 
@@ -102,7 +102,7 @@ export async function renderDetail(root, id) {
   const reload = () => renderDetail(root, id);
   root.querySelector("#editBtn")?.addEventListener("click", () => view.openForm(s, reload));
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(s.email); toast(t("reset_sent_to") + " " + s.email); });
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261128080223").then((m) => m.openCreateLogin("students", "student", s, reload)));
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261128080337").then((m) => m.openCreateLogin("students", "student", s, reload)));
 
   const draw = () => {
     const cid = courseFilter[id] || "";
@@ -149,7 +149,7 @@ function drawAttendance(box, { s, cid, E, SE, evals, P, reload, select }) {
   const statsFor = (e) => attStats(SE.filter((x) => x.courseId === e.courseId), s.id);
   const evFor = (e) => evals.find((x) => x.id === e.id);
   const canEv = (ev) => can(session(), "evaluations", ev ? "edit" : "add");
-  const evBtn = (e, ev) => (P.ev && canEv(ev) && e.status !== "cancelled" ? `<button class="btn btn-sm btn-outline-primary" data-ev="${e.id}"><i class="bi bi-star-half"></i> ${t("evaluate")}</button>` : "");
+  const evBtn = (e, ev) => (P.ev && canEv(ev) && e.status !== "cancelled" ? `<button class="btn btn-sm btn-wide btn-outline-primary" data-ev="${e.id}"><i class="bi bi-star-half"></i> ${t("evaluate")}</button>` : "");
   let html = head;
   if (!cid) {
     if (!E.length && !SE.length) { box.innerHTML = head + `<p class="text-muted small mb-0">${t("no_att_yet")}</p>`; return; }
@@ -159,7 +159,7 @@ function drawAttendance(box, { s, cid, E, SE, evals, P, reload, select }) {
         <td class="fw-semibold">${esc(e.courseName)}</td><td><bdi class="code-chip">${esc(e.groupCode)}</bdi> ${e.status !== "active" ? statusBadge(e.status) : ""}</td>
         ${P.ses ? `<td><b>${pctText(st.pct)}</b> <span class="text-muted small">(${st.present + st.late}/${st.total})</span></td>` : ""}
         ${P.ev ? `<td>${gradeText(effectiveAttGrade(ev, st))}</td><td>${gradeText(ev ? ev.participationGrade : null)}</td>` : ""}
-        <td class="text-end text-nowrap">${evBtn(e, ev)} <button class="btn btn-sm btn-outline-secondary" data-sel="${esc(e.courseId)}">${t("course_details")}</button></td></tr>`; }).join("")}</tbody></table></div>`
+        <td class="text-end text-nowrap">${evBtn(e, ev)} <button class="btn btn-sm btn-wide btn-outline-secondary" data-sel="${esc(e.courseId)}">${t("course_details")}</button></td></tr>`; }).join("")}</tbody></table></div>`
       : `<p class="text-muted small mb-0">${t("att_need_enroll_perm")}</p>`;
   } else {
     html += E.map((e) => { const st = statsFor(e), ev = evFor(e); return `<div class="eval-card">

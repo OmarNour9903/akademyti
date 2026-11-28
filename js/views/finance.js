@@ -1,11 +1,11 @@
-import { db, fs } from "../firebase.js?v=20261128080223";
-import { t } from "../i18n.js?v=20261128080223";
-import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261128080223";
-import { col, ref, audit, session, listActive } from "../data.js?v=20261128080223";
-import { can } from "../perms.js?v=20261128080223";
-import { fmtMoney } from "../crud.js?v=20261128080223";
-import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261128080223";
-import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS, migrateLegacy } from "../money.js?v=20261128080223";
+import { db, fs } from "../firebase.js?v=20261128080337";
+import { t } from "../i18n.js?v=20261128080337";
+import { esc, toast, openModal, UserError, confirmBox } from "../util.js?v=20261128080337";
+import { col, ref, audit, session, listActive } from "../data.js?v=20261128080337";
+import { can } from "../perms.js?v=20261128080337";
+import { fmtMoney } from "../crud.js?v=20261128080337";
+import { paymentsTable, bindReprint, instState, today } from "../enroll.js?v=20261128080337";
+import { myTreasuries, recordTx, readBalance, balRef, tAccess, TREASURY_PERMS, migrateLegacy } from "../money.js?v=20261128080337";
 
 let tab = "payments";
 const monthStart = () => today().slice(0, 8) + "01";
@@ -241,7 +241,7 @@ async function treasuries(box, reload, list) {
       <tbody>${rows.map(({ x, bal, showBal }) => `<tr><td class="fw-semibold">${esc(x.name)}</td>
         <td class="fs-5">${showBal ? fmtMoney(bal || 0) : `<span class="text-muted small"><i class="bi bi-eye-slash"></i> ${t("hidden")}</span>`}</td>
         <td class="small">${TREASURY_PERMS.filter((p) => tAccess(x, p)).map((p) => `<span class="badge text-bg-light">${t("tp_" + p)}</span>`).join(" ")}</td>
-        <td class="text-end">${isAdmin ? `<button class="btn btn-sm btn-outline-primary" data-access="${x.id}"><i class="bi bi-shield-lock"></i> ${t("treasury_access")}</button>` : ""}</td></tr>`).join("")}</tbody></table>`
+        <td class="text-end">${isAdmin ? `<button class="btn btn-sm btn-wide btn-outline-primary" data-access="${x.id}"><i class="bi bi-shield-lock"></i> ${t("treasury_access")}</button>` : ""}</td></tr>`).join("")}</tbody></table>`
       : `<p class="text-muted text-center mb-0 py-3">${t("no_treasuries")}</p>`}</div>`;
   box.querySelector("#addT")?.addEventListener("click", () => {
     openModal(t("add_treasury"), `<label class="form-label">${t("treasury_name")}</label><input name="name" class="form-control" required placeholder="${t("treasury_ph")}">`, async (form) => {

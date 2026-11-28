@@ -1,10 +1,10 @@
 // التشغيل اليومي: المحاضرات والحضور، التقييمات، الانضباط، المحتوى
-import { fs } from "./firebase.js?v=20261128080223";
-import { t } from "./i18n.js?v=20261128080223";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128080223";
-import { col, ref, audit, softDelete, session } from "./data.js?v=20261128080223";
-import { can } from "./perms.js?v=20261128080223";
-import { today } from "./enroll.js?v=20261128080223";
+import { fs } from "./firebase.js?v=20261128080337";
+import { t } from "./i18n.js?v=20261128080337";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128080337";
+import { col, ref, audit, softDelete, session } from "./data.js?v=20261128080337";
+import { can } from "./perms.js?v=20261128080337";
+import { today } from "./enroll.js?v=20261128080337";
 
 const noPerm = () => `<p class="text-muted small mb-0">${t("no_permission")}</p>`;
 const empty = (key = "no_data") => `<p class="text-muted small mb-0">${t(key)}</p>`;
@@ -70,7 +70,7 @@ export async function groupSessions(box, group, onChange) {
           <td class="small">${esc(x.instructorName || "-")}</td><td>${esc(x.hours ?? "-")}</td>
           <td>${v.length ? `<span class="fw-semibold">${came}</span> / ${v.length}` : `<span class="badge text-bg-warning">${t("att_not_taken")}</span>`}</td>
           <td class="text-nowrap text-end">
-            ${canEdit ? `<button class="btn btn-sm btn-success" data-att="${x.id}"><i class="bi bi-person-check"></i> ${t(v.length ? "edit_attendance" : "take_attendance")}</button>
+            ${canEdit ? `<button class="btn btn-sm btn-wide btn-success" data-att="${x.id}"><i class="bi bi-person-check"></i> ${t(v.length ? "edit_attendance" : "take_attendance")}</button>
               <button class="btn btn-sm btn-outline-secondary" data-edit="${x.id}" title="${t("edit")}" aria-label="${t("edit")}"><i class="bi bi-pencil-square"></i></button>` : ""}
             ${canDel ? `<button class="btn btn-sm btn-outline-danger" data-del="${x.id}" title="${t("delete")}" aria-label="${t("delete")}"><i class="bi bi-trash3"></i></button>` : ""}
           </td></tr>`; }).join("")}</tbody></table></div>` : empty("no_sessions")}`;
@@ -237,7 +237,7 @@ export async function groupEvaluations(box, group) {
       <td><span class="fw-semibold ${pctClass(st.pct)}">${pctText(st.pct)}</span> <span class="text-muted small">(${st.present + st.late}/${st.total})</span></td>
       <td>${gradeText(effectiveAttGrade(ev, st))}</td><td>${gradeText(ev ? ev.participationGrade : null)}</td>
       <td class="small text-muted">${esc(ev && ev.notes ? ev.notes : "-")}</td>
-      <td class="text-end">${canEval(ev) ? `<button class="btn btn-sm btn-outline-primary" data-ev="${e.id}"><i class="bi bi-star-half"></i> ${t("evaluate")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+      <td class="text-end">${canEval(ev) ? `<button class="btn btn-sm btn-wide btn-outline-primary" data-ev="${e.id}"><i class="bi bi-star-half"></i> ${t("evaluate")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
   box.querySelectorAll("[data-ev]").forEach((b) => b.addEventListener("click", () => {
     const r = rows.find((x) => x.e.id === b.dataset.ev);
     openEvaluation(r.e, r.st, r.ev, reload);
@@ -278,7 +278,7 @@ export function disciplineTable(list, reload, { withCourse = true } = {}) {
       <td class="small">${esc(d.by)}</td>
       <td>${st === "recorded" ? "" : `<span class="badge ds-${st}">${t("ds_" + st)}</span>`}</td>
       <td class="text-end text-nowrap">
-        ${canEdit && (st === "in_force" || st === "upcoming") ? `<button class="btn btn-sm btn-outline-success" data-lift="${d.id}"><i class="bi bi-unlock"></i> ${t("lift_suspension")}</button>` : ""}
+        ${canEdit && (st === "in_force" || st === "upcoming") ? `<button class="btn btn-sm btn-wide btn-outline-success" data-lift="${d.id}"><i class="bi bi-unlock"></i> ${t("lift_suspension")}</button>` : ""}
         ${canDel ? `<button class="btn btn-sm btn-outline-danger" data-ddel="${d.id}" title="${t("delete")}" aria-label="${t("delete")}"><i class="bi bi-trash3"></i></button>` : ""}
       </td></tr>`; }).join("")}</tbody></table></div>`;
 }

@@ -301,20 +301,26 @@ td.font-monospace { color: var(--ticket); font-size: .85rem; }
 /* ===== المرحلة 3: الحضور والتقييم والانضباط والمحتوى ===== */
 .badge.att-present { background: var(--stamp-tint); color: var(--stamp-dark); }
 .badge.att-late { background: var(--warn-tint); color: var(--warn); }
-.badge.att-excused { background: #E4ECF5; color: #1D4E89; }
+.badge.att-early { background: #EFE7F6; color: #5B2C83; }
+.badge.att-excuse { background: #E4ECF5; color: #1D4E89; }
 .badge.att-absent { background: var(--danger-tint); color: var(--danger); }
 
 .att-list { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-.att-row { display: flex; align-items: center; gap: .75rem; padding: .55rem .75rem; border-bottom: 1px solid var(--line-2); background: var(--surface); }
+.att-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding: .55rem .75rem; border-bottom: 1px solid var(--line-2); background: var(--surface); }
 .att-row:last-child { border-bottom: 0; }
 .att-row:has(input[value="absent"]:checked) { background: #FFF8F7; }
 .att-who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.att-opts { display: flex; gap: .3rem; flex-shrink: 0; }
+.att-ctrl { display: flex; gap: .3rem; flex-shrink: 0; }
+.att-opts { display: flex; gap: .3rem; }
+.att-reason { flex-basis: 100%; }
 .att-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); min-width: 4.6rem; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; }
 .att-btn:hover { border-color: var(--ink-2); }
 .btn-check:checked + .att-btn-present { background: var(--stamp); border-color: var(--stamp); color: #fff; }
 .btn-check:checked + .att-btn-late { background: var(--warn); border-color: var(--warn); color: #fff; }
-.btn-check:checked + .att-btn-excused { background: #1D4E89; border-color: #1D4E89; color: #fff; }
+.btn-check:checked + .att-btn-early { background: #5B2C83; border-color: #5B2C83; color: #fff; }
+.att-btn-excuse { border-style: dashed; margin-inline-start: .35rem; }
+.btn-check:checked + .att-btn-excuse { background: #1D4E89; border-color: #1D4E89; border-style: solid; color: #fff; }
+.btn-check:disabled + .att-btn-excuse { opacity: .35; }
 .btn-check:checked + .att-btn-absent { background: var(--danger); border-color: var(--danger); color: #fff; }
 .btn-check:focus-visible + .att-btn { outline: 2px solid var(--stamp); outline-offset: 2px; }
 
@@ -349,7 +355,9 @@ td.font-monospace { color: var(--ticket); font-size: .85rem; }
 
 @media (max-width: 767.98px) {
   .att-row { flex-direction: column; align-items: stretch; gap: .45rem; }
+  .att-ctrl { display: flex; flex-direction: column; gap: .3rem; }
   .att-opts { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .att-btn-excuse { margin-inline-start: 0; flex-direction: row !important; gap: .35rem !important; }
   .att-btn { min-width: 0; flex-direction: column; gap: 0; padding: .4rem .2rem; font-size: .78rem; }
   .att-btn i { font-size: 1rem; }
   .stat-row { grid-template-columns: repeat(2, 1fr); }

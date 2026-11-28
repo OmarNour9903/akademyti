@@ -1,10 +1,10 @@
 // مستحقات المحاضر: النسبة بتتحسب على المحصّل فعلاً من طلاب المجموعة
-import { fs } from "./firebase.js?v=20261128080337";
-import { t } from "./i18n.js?v=20261128080337";
-import { esc } from "./util.js?v=20261128080337";
-import { col, session } from "./data.js?v=20261128080337";
-import { can } from "./perms.js?v=20261128080337";
-import { fmtMoney } from "./crud.js?v=20261128080337";
+import { fs } from "./firebase.js?v=20261128081858";
+import { t } from "./i18n.js?v=20261128081858";
+import { esc } from "./util.js?v=20261128081858";
+import { col, session } from "./data.js?v=20261128081858";
+import { can } from "./perms.js?v=20261128081858";
+import { fmtMoney } from "./crud.js?v=20261128081858";
 
 const r2 = (n) => Math.round(n * 100) / 100;
 
@@ -59,7 +59,7 @@ export async function instructorDues(box, inst, groups, sessions = []) {
     ${general ? `<p class="small">${t("dues_general_paid")}: <b>${fmtMoney(general)}</b></p>` : ""}
     ${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="" data-amt=""><i class="bi bi-cash-coin"></i> ${t("pay_out_general")}</button>` : ""}`;
   box.querySelectorAll("[data-payout]").forEach((b) => b.addEventListener("click", async () => {
-    const { openExpense } = await import("./views/finance.js?v=20261128080337");
+    const { openExpense } = await import("./views/finance.js?v=20261128081858");
     const g = groups.find((x) => x.id === b.dataset.payout);
     openExpense(() => instructorDues(box, inst, groups), {
       categoryName: t("instructor_pay_cat"), instructorId: inst.id, groupId: g ? g.id : "", amount: b.dataset.amt,

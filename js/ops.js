@@ -1,10 +1,10 @@
 // التشغيل اليومي: المحاضرات والحضور، التقييمات، الانضباط، المحتوى
-import { fs } from "./firebase.js?v=20261128080337";
-import { t } from "./i18n.js?v=20261128080337";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128080337";
-import { col, ref, audit, softDelete, session } from "./data.js?v=20261128080337";
-import { can } from "./perms.js?v=20261128080337";
-import { today } from "./enroll.js?v=20261128080337";
+import { fs } from "./firebase.js?v=20261128081858";
+import { t } from "./i18n.js?v=20261128081858";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128081858";
+import { col, ref, audit, softDelete, session } from "./data.js?v=20261128081858";
+import { can } from "./perms.js?v=20261128081858";
+import { today } from "./enroll.js?v=20261128081858";
 
 const noPerm = () => `<p class="text-muted small mb-0">${t("no_permission")}</p>`;
 const empty = (key = "no_data") => `<p class="text-muted small mb-0">${t(key)}</p>`;
@@ -13,9 +13,22 @@ const r1 = (n) => Math.round(n * 10) / 10;
 const afterClose = (fn) => document.getElementById("appModal").addEventListener("hidden.bs.modal", fn, { once: true });
 
 // ===== الحضور =====
-export const ATT = ["present", "late", "excused", "absent"];
-const ATT_ICON = { present: "bi-check-lg", late: "bi-clock", excused: "bi-envelope-paper", absent: "bi-x-lg" };
-export const attBadge = (s) => (s ? `<span class="badge att-${s}"><i class="bi ${ATT_ICON[s]}"></i> ${t("att_" + s)}</span>` : `<span class="text-muted small">—</span>`);
+// حالة كل طالب في المحاضرة: { s: present|late|early|absent, x: بعذر؟, r: سبب العذر }
+// البيانات القديمة كانت نص ("present"...، و"excused" = غياب بعذر) وبتتقري زي ما هي
+export const ATT = ["present", "late", "early", "absent"];
+const EXCUSABLE = ["late", "early", "absent"];
+const ATT_ICON = { present: "bi-check-lg", late: "bi-clock", early: "bi-box-arrow-left", absent: "bi-x-lg" };
+export function normAtt(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v === "excused" ? { s: "absent", x: true, r: "" } : { s: v, x: false, r: "" };
+  return { s: v.s, x: !!v.x && EXCUSABLE.includes(v.s), r: v.r || "" };
+}
+const attended = (v) => { const a = normAtt(v); return !!a && a.s !== "absent"; };
+export const attBadge = (raw) => {
+  const a = normAtt(raw);
+  if (!a) return `<span class="text-muted small">—</span>`;
+  return `<span class="badge att-${a.s}"><i class="bi ${ATT_ICON[a.s]}"></i> ${t("att_" + a.s)}</span>${a.x ? ` <span class="badge att-excuse" title="${esc(a.r)}"><i class="bi bi-envelope-paper"></i> ${t("with_excuse")}</span>` : ""}${a.x && a.r ? `<div class="small text-muted mt-1">${esc(a.r)}</div>` : ""}`;
+};
 
 const clean = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.deleted);
 const byDate = (a, b) => (a.date || "").localeCompare(b.date || "") || (a.no || 0) - (b.no || 0);
@@ -27,16 +40,31 @@ export async function studentSessionsList(studentId) {
   return clean(await fs.getDocs(fs.query(col("sessions"), fs.where("studentIds", "array-contains", studentId)))).sort(byDate);
 }
 
-// نسبة الحضور: (حاضر + متأخر) ÷ (المحاضرات المسجّلة − الغياب بعذر)
+// سياسة الحضور من الإعدادات: التأخير والانصراف المبكر من غير عذر بيتحسبوا كام % من المحاضرة
+export const ATT_POLICY_DEFAULT = { late: 50, early: 50 };
+let policy = { ...ATT_POLICY_DEFAULT };
+export async function loadAttPolicy() {
+  try { const s = await fs.getDoc(ref("settings", "attendance")); policy = { ...ATT_POLICY_DEFAULT, ...(s.exists() ? s.data() : {}) }; } catch (e) { policy = { ...ATT_POLICY_DEFAULT }; }
+  return policy;
+}
+
+// النسبة = مجموع النقط ÷ المحاضرات المحسوبة
+// حاضر = 1 · متأخر/انصراف مبكر بعذر = 1 (العذر بيشيل أثره) · من غير عذر = النسبة من الإعدادات
+// غائب بعذر = ما بيتحسبش خالص · غائب من غير عذر = 0
 export function attStats(sessions, studentId) {
-  const s = { present: 0, late: 0, excused: 0, absent: 0, total: 0 };
+  const s = { present: 0, late: 0, early: 0, absent: 0, excused: 0, total: 0 };
+  let points = 0, base = 0;
   for (const x of sessions) {
-    const st = (x.attendance || {})[studentId];
-    if (!st) continue;
-    s[st]++; s.total++;
+    const a = normAtt((x.attendance || {})[studentId]);
+    if (!a) continue;
+    s[a.s]++; s.total++;
+    if (a.x) s.excused++;
+    if (a.s === "absent") { if (!a.x) base++; continue; }
+    base++;
+    points += a.s === "present" || a.x ? 1 : (Number(policy[a.s]) || 0) / 100;
   }
-  const base = s.total - s.excused;
-  s.pct = base > 0 ? Math.round(((s.present + s.late) / base) * 100) : null;
+  s.attended = s.present + s.late + s.early;
+  s.pct = base > 0 ? Math.round((points / base) * 100) : null;
   return s;
 }
 export const pctText = (p) => (p == null ? "-" : `${p}%`);
@@ -65,7 +93,7 @@ export async function groupSessions(box, group, onChange) {
       <thead><tr><th>#</th><th>${t("date")}</th><th>${t("topic")}</th><th>${t("instructor")}</th><th>${t("hours")}</th><th>${t("attendance")}</th><th></th></tr></thead>
       <tbody>${list.map((x) => {
         const v = Object.values(x.attendance || {});
-        const came = v.filter((a) => a === "present" || a === "late").length;
+        const came = v.filter(attended).length;
         return `<tr><td class="text-muted">${esc(x.no || "")}</td><td dir="ltr" class="text-end text-nowrap">${esc(x.date)}</td><td>${esc(x.topic || "-")}</td>
           <td class="small">${esc(x.instructorName || "-")}</td><td>${esc(x.hours ?? "-")}</td>
           <td>${v.length ? `<span class="fw-semibold">${came}</span> / ${v.length}` : `<span class="badge text-bg-warning">${t("att_not_taken")}</span>`}</td>
@@ -128,7 +156,7 @@ function openSession(group, existing, list, done) {
   }, { size: "md" });
 }
 
-// شاشة الحضور: كل طالب في سطر، و4 زراير. الطلاب اللي لسه ما اتسجلوش بيبدأوا "حاضر"
+// شاشة الحضور: كل طالب بيبدأ فاضي. الموظف بيختار الحالة، ولو فيه عذر بيعلّم "بعذر" ويكتب السبب
 export async function openAttendance(sess, group, done) {
   let students = [];
   if (can(session(), "enrollments", "view")) {
@@ -145,42 +173,69 @@ export async function openAttendance(sess, group, done) {
   });
   if (!students.length) { toast(t(can(session(), "enrollments", "view") ? "no_group_students" : "att_need_enroll_perm"), "warning"); done(); return; }
   students.sort((a, b) => (a.code || "").localeCompare(b.code || ""));
-  const fresh = !Object.keys(att).length;
   const row = (s, i) => {
-    const cur = att[s.id] || (fresh ? "present" : "");
-    return `<div class="att-row" data-sid="${esc(s.id)}">
+    const cur = normAtt(att[s.id]) || { s: "", x: false, r: "" };
+    return `<div class="att-row" data-i="${i}">
       <div class="att-who"><span class="code-chip">${esc(s.code)}</span> <span class="fw-semibold">${esc(s.name)}</span>${s.former ? ` <span class="badge text-bg-light">${t("att_former")}</span>` : ""}</div>
-      <div class="att-opts" role="radiogroup" aria-label="${esc(s.name)}">${ATT.map((a) => `
-        <input type="radio" class="btn-check" name="a_${i}" id="a_${i}_${a}" value="${a}" ${cur === a ? "checked" : ""} autocomplete="off">
-        <label class="btn btn-sm att-btn att-btn-${a}" for="a_${i}_${a}"><i class="bi ${ATT_ICON[a]}"></i><span>${t("att_" + a)}</span></label>`).join("")}</div>
+      <div class="att-ctrl">
+        <div class="att-opts" role="radiogroup" aria-label="${esc(s.name)}">${ATT.map((a) => `
+          <input type="radio" class="btn-check" name="a_${i}" id="a_${i}_${a}" value="${a}" ${cur.s === a ? "checked" : ""} autocomplete="off">
+          <label class="btn btn-sm att-btn att-btn-${a}" for="a_${i}_${a}"><i class="bi ${ATT_ICON[a]}"></i><span>${t("att_" + a)}</span></label>`).join("")}</div>
+        <input type="checkbox" class="btn-check" id="x_${i}" ${cur.x ? "checked" : ""} ${EXCUSABLE.includes(cur.s) ? "" : "disabled"} autocomplete="off">
+        <label class="btn btn-sm att-btn att-btn-excuse" for="x_${i}" title="${t("excuse_hint")}"><i class="bi bi-envelope-paper"></i><span>${t("with_excuse")}</span></label>
+      </div>
+      <input class="form-control form-control-sm att-reason ${cur.x ? "" : "d-none"}" id="r_${i}" maxlength="200" placeholder="${t("excuse_reason")}" value="${esc(cur.r)}">
     </div>`;
   };
-  const html = `<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  const html = `<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
       <span class="small text-muted">${esc(group.code)} — ${t("session")} ${esc(sess.no || "")} — <bdi>${esc(sess.date)}</bdi></span>
-      <span class="ms-auto small" id="attCount"></span>
-      <button type="button" class="btn btn-sm btn-outline-success" id="allPresent"><i class="bi bi-check2-all"></i> ${t("all_present")}</button>
+      <button type="button" class="btn btn-sm btn-outline-success ms-auto" id="restPresent"><i class="bi bi-check2-all"></i> ${t("mark_rest_present")}</button>
     </div>
-    ${fresh ? `<p class="form-text mt-0">${t("att_default_note")}</p>` : ""}
+    <p class="form-text mt-0">${t("att_note")}</p>
+    <div class="small mb-2" id="attCount" aria-live="polite"></div>
     <div class="att-list">${students.map(row).join("")}</div>`;
   const body = openModal(t("attendance"), html, async (form) => {
     const out = {}, names = { ...(sess.names || {}) };
     students.forEach((s, i) => {
       const v = form.querySelector(`input[name="a_${i}"]:checked`);
-      if (v) { out[s.id] = v.value; names[s.id] = `${s.code} ${s.name}`; }
+      if (!v) return;
+      const x = EXCUSABLE.includes(v.value) && form.querySelector(`#x_${i}`).checked;
+      out[s.id] = { s: v.value, x, r: x ? form.querySelector(`#r_${i}`).value.trim() : "" };
+      names[s.id] = `${s.code} ${s.name}`;
     });
+    if (!Object.keys(out).length) throw new UserError("att_none_marked");
     await fs.updateDoc(ref("sessions", sess.id), { attendance: out, studentIds: Object.keys(out), names, takenBy: byName(), takenAt: fs.serverTimestamp(), updatedAt: fs.serverTimestamp() });
-    const c = Object.values(out);
+    const c = Object.values(out), n = (st) => c.filter((a) => a.s === st).length;
     await audit("update", "sessions", sess.id, `${group.code} — ${t("attendance")} ${t("session")} ${sess.no || ""}`, null,
-      { present: c.filter((x) => x === "present").length, late: c.filter((x) => x === "late").length, excused: c.filter((x) => x === "excused").length, absent: c.filter((x) => x === "absent").length });
+      { present: n("present"), late: n("late"), early: n("early"), absent: n("absent"), excused: c.filter((a) => a.x).length, unmarked: students.length - c.length });
     toast(t("saved"));
     done();
   }, { submitLabel: t("save_attendance"), size: "lg" });
-  const count = () => {
-    const v = [...body.querySelectorAll("input.btn-check:checked")].map((x) => x.value);
-    body.querySelector("#attCount").innerHTML = `${t("att_present")}: <b>${v.filter((x) => x === "present" || x === "late").length}</b> / ${students.length} · ${t("att_absent")}: <b class="text-danger">${v.filter((x) => x === "absent").length}</b>`;
+  const sync = (i) => {
+    const v = body.querySelector(`input[name="a_${i}"]:checked`);
+    const x = body.querySelector(`#x_${i}`), r = body.querySelector(`#r_${i}`);
+    const ok = !!v && EXCUSABLE.includes(v.value);
+    x.disabled = !ok;
+    if (!ok) x.checked = false;
+    r.classList.toggle("d-none", !x.checked);
   };
-  body.addEventListener("change", count);
-  body.querySelector("#allPresent").addEventListener("click", () => { students.forEach((s, i) => { body.querySelector(`#a_${i}_present`).checked = true; }); count(); });
+  const count = () => {
+    const v = students.map((s, i) => body.querySelector(`input[name="a_${i}"]:checked`)?.value || "");
+    const n = (st) => v.filter((a) => a === st).length;
+    const left = n("");
+    body.querySelector("#attCount").innerHTML = ATT.map((a) => `${t("att_" + a)}: <b>${n(a)}</b>`).join(" · ") +
+      ` · ${t("with_excuse")}: <b>${students.filter((s, i) => body.querySelector(`#x_${i}`).checked).length}</b>` +
+      (left ? ` · <span class="text-danger">${t("att_unmarked")}: <b>${left}</b></span>` : ` · <span class="text-success">${t("att_all_marked")}</span>`);
+  };
+  body.addEventListener("change", (ev) => {
+    const rowEl = ev.target.closest(".att-row");
+    if (rowEl) sync(rowEl.dataset.i);
+    count();
+  });
+  body.querySelector("#restPresent").addEventListener("click", () => {
+    students.forEach((s, i) => { if (!body.querySelector(`input[name="a_${i}"]:checked`)) { body.querySelector(`#a_${i}_present`).checked = true; sync(i); } });
+    count();
+  });
   count();
 }
 
@@ -221,6 +276,7 @@ const canEval = (ev) => can(session(), "evaluations", ev ? "edit" : "add");
 export async function groupEvaluations(box, group) {
   const S = session();
   if (!can(S, "evaluations", "view") || !can(S, "enrollments", "view")) { box.innerHTML = noPerm(); return; }
+  await loadAttPolicy();
   const [es, evs, sessions] = await Promise.all([
     fs.getDocs(fs.query(col("enrollments"), fs.where("groupId", "==", group.id))),
     loadEvaluations("groupId", group.id),
@@ -234,7 +290,7 @@ export async function groupEvaluations(box, group) {
     <thead><tr><th>${t("code")}</th><th>${t("full_name")}</th><th>${t("attendance")}</th><th>${t("att_grade")}</th><th>${t("part_grade")}</th><th>${t("eval_notes")}</th><th></th></tr></thead>
     <tbody>${rows.map(({ e, st, ev }) => `<tr>
       <td><a href="#student/${e.studentId}" class="code-chip text-decoration-none">${esc(e.studentCode)}</a></td><td>${esc(e.studentName)}</td>
-      <td><span class="fw-semibold ${pctClass(st.pct)}">${pctText(st.pct)}</span> <span class="text-muted small">(${st.present + st.late}/${st.total})</span></td>
+      <td><span class="fw-semibold ${pctClass(st.pct)}">${pctText(st.pct)}</span> <span class="text-muted small">(${st.attended}/${st.total})</span></td>
       <td>${gradeText(effectiveAttGrade(ev, st))}</td><td>${gradeText(ev ? ev.participationGrade : null)}</td>
       <td class="small text-muted">${esc(ev && ev.notes ? ev.notes : "-")}</td>
       <td class="text-end">${canEval(ev) ? `<button class="btn btn-sm btn-wide btn-outline-primary" data-ev="${e.id}"><i class="bi bi-star-half"></i> ${t("evaluate")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
@@ -419,6 +475,6 @@ export async function instructorSessions(box, instId) {
     <tbody>${list.map((x) => { const v = Object.values(x.attendance || {}); return `<tr>
       <td dir="ltr" class="text-end text-nowrap">${esc(x.date)}</td><td><a href="#group/${x.groupId}" class="code-chip text-decoration-none">${esc(x.groupCode)}</a></td>
       <td>${esc(x.topic || "-")}</td><td>${esc(x.hours ?? "-")}</td>
-      <td>${v.length ? `${v.filter((a) => a === "present" || a === "late").length} / ${v.length}` : "-"}</td></tr>`; }).join("")}</tbody></table></div>` : empty("no_sessions");
+      <td>${v.length ? `${v.filter(attended).length} / ${v.length}` : "-"}</td></tr>`; }).join("")}</tbody></table></div>` : empty("no_sessions");
   return list;
 }

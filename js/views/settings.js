@@ -1,7 +1,7 @@
-import { db, fs } from "../firebase.js?v=20261128080337";
-import { t } from "../i18n.js?v=20261128080337";
-import { esc, toast, UserError, confirmBox, isPreview } from "../util.js?v=20261128080337";
-import { col, ref, audit, session, DEFAULT_CODES, codeFormat, formatCode, resetCodeCache } from "../data.js?v=20261128080337";
+import { db, fs } from "../firebase.js?v=20261128081858";
+import { t } from "../i18n.js?v=20261128081858";
+import { esc, toast, UserError, confirmBox, isPreview } from "../util.js?v=20261128081858";
+import { col, ref, audit, session, DEFAULT_CODES, codeFormat, formatCode, resetCodeCache } from "../data.js?v=20261128081858";
 
 const ENTITIES = [["students", "students"], ["courses", "courses"], ["instructors", "instructors"], ["employees", "employees"], ["groups", "groups_suffix"]];
 
@@ -10,6 +10,8 @@ export async function render(root) {
   resetCodeCache();
   const fmts = {};
   for (const [k] of ENTITIES) fmts[k] = await codeFormat(k);
+  const { loadAttPolicy } = await import("../ops.js?v=20261128081858");
+  const pol = await loadAttPolicy();
   const cats = (await fs.getDocs(col("expenseCategories"))).docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.deleted);
   root.innerHTML = `<h1 class="h4 fw-bold mb-4">${t("settings")}</h1>
   <div class="row g-3">
@@ -23,6 +25,15 @@ export async function render(root) {
       <p class="text-muted small">${t("expense_categories_hint")}</p>
       <div class="d-flex flex-wrap gap-2 mb-3" id="catList">${cats.map((c) => `<span class="badge text-bg-light fs-6 fw-normal">${esc(c.name)} <a href="javascript:void(0)" class="text-danger ms-1" data-delcat="${c.id}"><i class="bi bi-x"></i></a></span>`).join("") || `<span class="text-muted small">${t("no_data")}</span>`}</div>
       <div class="input-group"><input id="catName" class="form-control" placeholder="${t("category_ph")}"><button id="addCat" class="btn btn-outline-primary">${t("add")}</button></div>
+    </div></div>
+    <div class="col-12"><div class="card card-soft p-4">
+      <h2 class="h6 fw-bold mb-1">${t("att_policy")}</h2>
+      <p class="text-muted small">${t("att_policy_hint")}</p>
+      <div class="row g-3 align-items-end">
+        <div class="col-sm-4"><label class="form-label" for="polLate">${t("late_credit")}</label><div class="input-group"><input id="polLate" type="number" min="0" max="100" step="5" class="form-control" value="${esc(pol.late)}"><span class="input-group-text">%</span></div></div>
+        <div class="col-sm-4"><label class="form-label" for="polEarly">${t("early_credit")}</label><div class="input-group"><input id="polEarly" type="number" min="0" max="100" step="5" class="form-control" value="${esc(pol.early)}"><span class="input-group-text">%</span></div></div>
+        <div class="col-sm-4"><button id="savePolicy" class="btn btn-brand">${t("save")}</button></div>
+      </div>
     </div></div>
     <div class="col-12"><div class="card card-soft p-4">
       <h2 class="h6 fw-bold mb-1">${t("code_formats")}</h2>
@@ -61,6 +72,16 @@ export async function render(root) {
       await fs.setDoc(ref("settings", "codes"), { ...data, updatedAt: fs.serverTimestamp() });
       await audit("update", "settings", "codes", t("code_formats"), null, data);
       resetCodeCache();
+      toast(t("saved"));
+    } catch (e) { toast(e.userMessage || t("err_generic"), "danger"); console.error(e); }
+  });
+  root.querySelector("#savePolicy").addEventListener("click", async () => {
+    try {
+      guard();
+      const late = Number(root.querySelector("#polLate").value), early = Number(root.querySelector("#polEarly").value);
+      if (![late, early].every((v) => Number.isFinite(v) && v >= 0 && v <= 100)) throw new UserError("err_percent");
+      await fs.setDoc(ref("settings", "attendance"), { late, early, updatedAt: fs.serverTimestamp() });
+      await audit("update", "settings", "attendance", t("att_policy"), { late: pol.late, early: pol.early }, { late, early });
       toast(t("saved"));
     } catch (e) { toast(e.userMessage || t("err_generic"), "danger"); console.error(e); }
   });

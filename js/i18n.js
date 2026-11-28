@@ -466,7 +466,22 @@ const dict = {
     enrolled_courses: "الاشتراكات",
     overdue_inst: "أقساط متأخرة",
     disc_count: "إجراءات انضباط",
-    sessions_log: "سجل المحاضرات"
+    sessions_log: "سجل المحاضرات",
+    att_early: "انصراف مبكر",
+    with_excuse: "بعذر",
+    excuse_reason: "سبب العذر (اختياري)",
+    excuse_hint: "العذر بيشيل أثر الغياب أو التأخير أو الانصراف من التقييم",
+    mark_rest_present: "علّم الباقي حاضر",
+    att_note: "اختار حالة كل طالب. لو عنده عذر لتأخيره أو غيابه أو انصرافه بدري، دوس \"بعذر\" واكتب السبب، وده مش هيأثر على تقييمه.",
+    att_unmarked: "لسه ما اتسجلوش",
+    att_all_marked: "كله اتسجل",
+    att_none_marked: "علّم حالة طالب واحد على الأقل.",
+    of_them_excused: "منهم بعذر",
+    att_policy: "حساب الحضور في التقييم",
+    att_policy_hint: "الحاضر بياخد المحاضرة كاملة، والغائب من غير عذر صفر، والغائب بعذر ما بيتحسبش. أي حالة بعذر ما بتنقصش من التقييم. حدد هنا التأخير والانصراف المبكر من غير عذر بيتحسبوا كام % من المحاضرة.",
+    late_credit: "التأخير من غير عذر",
+    early_credit: "الانصراف المبكر من غير عذر",
+    err_percent: "النسبة لازم تكون من 0 لـ 100."
   },
   en: {
     brand: "Akademyti",
@@ -935,7 +950,22 @@ const dict = {
     enrolled_courses: "Enrollments",
     overdue_inst: "Overdue installments",
     disc_count: "Discipline actions",
-    sessions_log: "Session log"
+    sessions_log: "Session log",
+    att_early: "Left early",
+    with_excuse: "Excused",
+    excuse_reason: "Excuse reason (optional)",
+    excuse_hint: "An excuse removes the effect of the absence, lateness or early leave from the grade",
+    mark_rest_present: "Mark the rest present",
+    att_note: "Choose each student's status. If a student has an excuse for being late, absent or leaving early, tap \"Excused\" and add the reason; it won't affect their grade.",
+    att_unmarked: "Not marked yet",
+    att_all_marked: "Everyone marked",
+    att_none_marked: "Mark at least one student.",
+    of_them_excused: "Excused",
+    att_policy: "Attendance in grading",
+    att_policy_hint: "Present counts as a full session, unexcused absence as zero, and excused absence isn't counted. Anything excused doesn't lower the grade. Set how much an unexcused late arrival or early leave counts, as a % of a session.",
+    late_credit: "Unexcused late arrival",
+    early_credit: "Unexcused early leave",
+    err_percent: "The percentage must be between 0 and 100."
   }
 };
 

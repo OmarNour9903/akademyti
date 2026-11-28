@@ -1,11 +1,11 @@
-import { t } from "../i18n.js?v=20261128080337";
-import { esc, toast } from "../util.js?v=20261128080337";
-import { session } from "../data.js?v=20261128080337";
-import { can, hasSpecial } from "../perms.js?v=20261128080337";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128080337";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261128080337";
-import { loadStudentEnrollments, loadStudentPayments, renderStudentEnrollments, renderStudentPayments, enrollmentTotals } from "../enroll.js?v=20261128080337";
-import { studentSessionsList, attStats, pctText, attBadge, loadEvaluations, effectiveAttGrade, gradeText, openEvaluation, loadDiscipline, activeSuspension, disciplineTable, bindDiscipline, openDiscipline } from "../ops.js?v=20261128080337";
+import { t } from "../i18n.js?v=20261128081858";
+import { esc, toast } from "../util.js?v=20261128081858";
+import { session } from "../data.js?v=20261128081858";
+import { can, hasSpecial } from "../perms.js?v=20261128081858";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128081858";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261128081858";
+import { loadStudentEnrollments, loadStudentPayments, renderStudentEnrollments, renderStudentPayments, enrollmentTotals } from "../enroll.js?v=20261128081858";
+import { studentSessionsList, loadAttPolicy, attStats, pctText, attBadge, loadEvaluations, effectiveAttGrade, gradeText, openEvaluation, loadDiscipline, activeSuspension, disciplineTable, bindDiscipline, openDiscipline } from "../ops.js?v=20261128081858";
 
 const statuses = ["active", "suspended", "archived"];
 
@@ -59,7 +59,7 @@ export async function renderDetail(root, id) {
   const P = { enr: can(S, "enrollments", "view"), pay: can(S, "payments", "view"), ses: can(S, "sessions", "view"), ev: can(S, "evaluations", "view"), disc: can(S, "discipline", "view") };
   const [enrolls, pays, sessions, evals, discs] = await Promise.all([
     P.enr ? loadStudentEnrollments(id) : [], P.pay ? loadStudentPayments(id) : [], P.ses ? studentSessionsList(id) : [],
-    P.ev ? loadEvaluations("studentId", id) : [], P.disc ? loadDiscipline(id) : []
+    P.ev ? loadEvaluations("studentId", id) : [], P.disc ? loadDiscipline(id) : [], P.ses ? loadAttPolicy() : null
   ]);
   // الكورسات اللي ليها أي بيانات للطالب ده
   const courses = [];
@@ -102,7 +102,7 @@ export async function renderDetail(root, id) {
   const reload = () => renderDetail(root, id);
   root.querySelector("#editBtn")?.addEventListener("click", () => view.openForm(s, reload));
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(s.email); toast(t("reset_sent_to") + " " + s.email); });
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261128080337").then((m) => m.openCreateLogin("students", "student", s, reload)));
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261128081858").then((m) => m.openCreateLogin("students", "student", s, reload)));
 
   const draw = () => {
     const cid = courseFilter[id] || "";
@@ -157,14 +157,14 @@ function drawAttendance(box, { s, cid, E, SE, evals, P, reload, select }) {
       <thead><tr><th>${t("course")}</th><th>${t("group")}</th>${P.ses ? `<th>${t("attendance")}</th>` : ""}${P.ev ? `<th>${t("att_grade")}</th><th>${t("part_grade")}</th>` : ""}<th></th></tr></thead>
       <tbody>${E.map((e) => { const st = statsFor(e), ev = evFor(e); return `<tr>
         <td class="fw-semibold">${esc(e.courseName)}</td><td><bdi class="code-chip">${esc(e.groupCode)}</bdi> ${e.status !== "active" ? statusBadge(e.status) : ""}</td>
-        ${P.ses ? `<td><b>${pctText(st.pct)}</b> <span class="text-muted small">(${st.present + st.late}/${st.total})</span></td>` : ""}
+        ${P.ses ? `<td><b>${pctText(st.pct)}</b> <span class="text-muted small">(${st.attended}/${st.total})</span></td>` : ""}
         ${P.ev ? `<td>${gradeText(effectiveAttGrade(ev, st))}</td><td>${gradeText(ev ? ev.participationGrade : null)}</td>` : ""}
         <td class="text-end text-nowrap">${evBtn(e, ev)} <button class="btn btn-sm btn-wide btn-outline-secondary" data-sel="${esc(e.courseId)}">${t("course_details")}</button></td></tr>`; }).join("")}</tbody></table></div>`
       : `<p class="text-muted small mb-0">${t("att_need_enroll_perm")}</p>`;
   } else {
     html += E.map((e) => { const st = statsFor(e), ev = evFor(e); return `<div class="eval-card">
       <div class="d-flex flex-wrap align-items-center gap-2 mb-2"><bdi class="code-chip">${esc(e.groupCode)}</bdi> <span class="fw-semibold">${esc(e.courseName)}</span> ${statusBadge(e.status)}<span class="ms-auto">${evBtn(e, ev)}</span></div>
-      ${P.ses ? `<div class="att-summary">${["present", "late", "excused", "absent"].map((a) => `<span>${attBadge(a)} <b>${st[a]}</b></span>`).join("")}<span>${t("attendance_rate")}: <b>${pctText(st.pct)}</b></span></div>` : ""}
+      ${P.ses ? `<div class="att-summary">${["present", "late", "early", "absent"].map((a) => `<span>${attBadge(a)} <b>${st[a]}</b></span>`).join("")}${st.excused ? `<span>${t("of_them_excused")}: <b>${st.excused}</b></span>` : ""}<span>${t("attendance_rate")}: <b>${pctText(st.pct)}</b></span></div>` : ""}
       ${P.ev ? `<div class="small mt-2">${t("att_grade")}: ${gradeText(effectiveAttGrade(ev, st))} · ${t("part_grade")}: ${gradeText(ev ? ev.participationGrade : null)}
         ${ev && ev.notes ? `<div class="pre-line mt-1">${t("eval_notes")}: ${esc(ev.notes)}</div>` : ""}${ev ? `<div class="text-muted mt-1">${t("by")} ${esc(ev.updatedBy)}</div>` : ""}</div>` : ""}
     </div>`; }).join("");

@@ -1,11 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261126234443";
-import { t, currentLang } from "./i18n.js?v=20261126234443";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261126234443";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261126234443";
-import { can, hasSpecial } from "./perms.js?v=20261126234443";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261126234443";
-import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261126234443";
+import { db, fs } from "./firebase.js?v=20261128075446";
+import { t, currentLang } from "./i18n.js?v=20261128075446";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261128075446";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261128075446";
+import { can, hasSpecial } from "./perms.js?v=20261128075446";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261128075446";
+import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261128075446";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -244,11 +244,18 @@ export function printReceipt(p) {
 }
 
 // ===== قايمة اشتراكات طالب (صفحة الطالب) =====
+export async function loadStudentEnrollments(studentId) {
+  const snap = await fs.getDocs(fs.query(col("enrollments"), fs.where("studentId", "==", studentId)));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.deleted);
+}
+
 export async function studentEnrollments(box, student, reload) {
+  if (!can(session(), "enrollments", "view")) { box.innerHTML = `<p class="text-muted small mb-0">${t("no_permission")}</p>`; return; }
+  renderStudentEnrollments(box, student, await loadStudentEnrollments(student.id), reload);
+}
+
+export function renderStudentEnrollments(box, student, list, reload) {
   const S = session();
-  if (!can(S, "enrollments", "view")) { box.innerHTML = `<p class="text-muted small mb-0">${t("no_permission")}</p>`; return; }
-  const snap = await fs.getDocs(fs.query(col("enrollments"), fs.where("studentId", "==", student.id)));
-  const list = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.deleted);
   const head = `<div class="d-flex align-items-center mb-3"><h2 class="h6 fw-bold mb-0">${t("student_courses")}</h2>
     ${can(S, "enrollments", "add") ? `<button class="btn btn-sm btn-brand ms-auto" id="enrollBtn"><i class="bi bi-plus-lg"></i> ${t("new_enrollment")}</button>` : ""}</div>`;
   if (!list.length) { box.innerHTML = head + `<p class="text-muted small mb-0">${t("no_enrollments")}</p>`; }
@@ -279,11 +286,17 @@ export async function studentEnrollments(box, student, reload) {
   box.querySelector("#enrollBtn")?.addEventListener("click", () => openEnroll(student, reload));
 }
 
+export async function loadStudentPayments(studentId) {
+  const snap = await fs.getDocs(fs.query(col("payments"), fs.where("studentId", "==", studentId)));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.code || "").localeCompare(a.code || ""));
+}
+
 export async function studentPayments(box, student) {
-  const S = session();
-  if (!can(S, "payments", "view")) { box.innerHTML = `<p class="text-muted small mb-0">${t("no_permission")}</p>`; return; }
-  const snap = await fs.getDocs(fs.query(col("payments"), fs.where("studentId", "==", student.id)));
-  const list = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.code || "").localeCompare(a.code || ""));
+  if (!can(session(), "payments", "view")) { box.innerHTML = `<p class="text-muted small mb-0">${t("no_permission")}</p>`; return; }
+  renderStudentPayments(box, await loadStudentPayments(student.id));
+}
+
+export function renderStudentPayments(box, list) {
   box.innerHTML = list.length ? paymentsTable(list, false) : `<p class="text-muted small mb-0">${t("no_payments")}</p>`;
   bindReprint(box, list, () => location.reload());
 }

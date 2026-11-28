@@ -1,14 +1,14 @@
 // مستحقات المحاضر: النسبة بتتحسب على المحصّل فعلاً من طلاب المجموعة
-import { fs } from "./firebase.js?v=20261126234443";
-import { t } from "./i18n.js?v=20261126234443";
-import { esc } from "./util.js?v=20261126234443";
-import { col, session } from "./data.js?v=20261126234443";
-import { can } from "./perms.js?v=20261126234443";
-import { fmtMoney } from "./crud.js?v=20261126234443";
+import { fs } from "./firebase.js?v=20261128075446";
+import { t } from "./i18n.js?v=20261128075446";
+import { esc } from "./util.js?v=20261128075446";
+import { col, session } from "./data.js?v=20261128075446";
+import { can } from "./perms.js?v=20261128075446";
+import { fmtMoney } from "./crud.js?v=20261128075446";
 
 const r2 = (n) => Math.round(n * 100) / 100;
 
-export async function instructorDues(box, inst, groups) {
+export async function instructorDues(box, inst, groups, sessions = []) {
   const S = session();
   if (!can(S, "payments", "view") || !can(S, "expenses", "view")) { box.innerHTML = `<p class="text-muted small mb-0">${t("dues_need_perm")}</p>`; return; }
   if (!inst.payType) { box.innerHTML = `<p class="text-muted small mb-0">${t("dues_no_scheme")}</p>`; return; }
@@ -27,12 +27,15 @@ export async function instructorDues(box, inst, groups) {
       const es = await fs.getDocs(fs.query(col("enrollments"), fs.where("groupId", "==", g.id), fs.where("status", "==", "active")));
       base = es.size;
       due = r2(base * (Number(inst.payAmount) || 0));
+    } else if (inst.payType === "hourly" && can(S, "sessions", "view")) {
+      base = r2(sessions.filter((x) => x.groupId === g.id).reduce((s2, x) => s2 + (Number(x.hours) || 0), 0));
+      due = r2(base * (Number(inst.payAmount) || 0));
     }
     const paid = r2(paidTx.filter((x) => x.groupId === g.id).reduce((s, x) => s + x.amount, 0));
     rows.push({ g, base, due, paid, left: due == null ? null : r2(due - paid) });
   }
   const general = r2(paidTx.filter((x) => !x.groupId).reduce((s, x) => s + x.amount, 0));
-  const baseLabel = { percentage: "dues_base_collected", perStudent: "dues_base_students" }[inst.payType];
+  const baseLabel = { percentage: "dues_base_collected", perStudent: "dues_base_students", hourly: can(S, "sessions", "view") ? "dues_base_hours" : null }[inst.payType];
   const canPay = can(S, "expenses", "add");
   box.innerHTML = `
     ${["salary", "hourly"].includes(inst.payType) ? `<p class="small text-muted">${t(inst.payType === "salary" ? "dues_salary_note" : "dues_hourly_note")} ${fmtMoney(inst.payAmount)}</p>` : ""}
@@ -46,7 +49,7 @@ export async function instructorDues(box, inst, groups) {
     ${general ? `<p class="small">${t("dues_general_paid")}: <b>${fmtMoney(general)}</b></p>` : ""}
     ${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="" data-amt=""><i class="bi bi-cash-coin"></i> ${t("pay_out_general")}</button>` : ""}`;
   box.querySelectorAll("[data-payout]").forEach((b) => b.addEventListener("click", async () => {
-    const { openExpense } = await import("./views/finance.js?v=20261126234443");
+    const { openExpense } = await import("./views/finance.js?v=20261128075446");
     const g = groups.find((x) => x.id === b.dataset.payout);
     openExpense(() => instructorDues(box, inst, groups), {
       categoryName: t("instructor_pay_cat"), instructorId: inst.id, groupId: g ? g.id : "", amount: b.dataset.amt,

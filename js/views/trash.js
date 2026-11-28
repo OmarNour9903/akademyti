@@ -1,7 +1,7 @@
-import { db, fs } from "../firebase.js?v=20261126234443";
-import { t } from "../i18n.js?v=20261126234443";
-import { esc, toast, confirmBox } from "../util.js?v=20261126234443";
-import { col, ref, userRef, restore, purge } from "../data.js?v=20261126234443";
+import { db, fs } from "../firebase.js?v=20261128075446";
+import { t } from "../i18n.js?v=20261128075446";
+import { esc, toast, confirmBox } from "../util.js?v=20261128075446";
+import { col, ref, userRef, restore, purge } from "../data.js?v=20261128075446";
 
 // الأجزاء اللي بتدخل السلة (هتزيد مع كل مرحلة)
 const SOURCES = [
@@ -10,7 +10,10 @@ const SOURCES = [
   { key: "courses", title: () => (x) => `${x.code} ${x.name}` },
   { key: "groups", title: () => (x) => `${x.code} ${x.courseName || ""}` },
   { key: "students", title: () => (x) => `${x.code} ${x.name}` },
-  { key: "instructors", title: () => (x) => `${x.code} ${x.name}` }
+  { key: "instructors", title: () => (x) => `${x.code} ${x.name}` },
+  { key: "sessions", title: () => (x) => `${x.groupCode} — #${x.no || ""} (${x.date})` },
+  { key: "content", title: () => (x) => x.title },
+  { key: "discipline", title: () => (x) => `${x.studentCode} ${x.studentName} — ${x.date}` }
 ];
 
 export async function render(root) {

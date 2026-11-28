@@ -1,9 +1,9 @@
-import { fs } from "../firebase.js?v=20261126234443";
-import { t } from "../i18n.js?v=20261126234443";
-import { esc, UserError } from "../util.js?v=20261126234443";
-import { col, session, nextNumber, codeFormat } from "../data.js?v=20261126234443";
-import { can, hasSpecial } from "../perms.js?v=20261126234443";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126234443";
+import { fs } from "../firebase.js?v=20261128075446";
+import { t } from "../i18n.js?v=20261128075446";
+import { esc, UserError } from "../util.js?v=20261128075446";
+import { col, session, nextNumber, codeFormat } from "../data.js?v=20261128075446";
+import { can, hasSpecial } from "../perms.js?v=20261128075446";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128075446";
 
 const statuses = ["open", "running", "finished", "cancelled", "archived"];
 let cache = { courses: [], instructors: [] };
@@ -103,7 +103,18 @@ export async function renderDetail(root, id) {
         ${(g.instructorIds || []).length ? g.instructorIds.map((iid, i) => `<a href="#instructor/${iid}" class="badge text-bg-light text-decoration-none fs-6 fw-normal me-1 mb-1">${esc((g.instructorNames || [])[i] || iid)}</a>`).join("") : `<span class="text-muted small">${t("no_data")}</span>`}
       </div></div>
       <div class="col-12"><div class="card card-soft p-4"><h2 class="h6 fw-bold mb-3">${t("group_students")}</h2><div id="stuBox"></div></div></div>
+      <div class="col-12"><div class="card card-soft p-4" id="sesBox"></div></div>
+      <div class="col-12"><div class="card card-soft p-4"><h2 class="h6 fw-bold mb-3">${t("group_evaluations")}</h2><div id="evBox"></div></div></div>
+      <div class="col-12"><div class="card card-soft p-4" id="contentBox"></div></div>
     </div>`;
-  import("../enroll.js?v=20261126234443").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
+  import("../enroll.js?v=20261128075446").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
+  import("../ops.js?v=20261128075446").then((m) => {
+    const evBox = root.querySelector("#evBox");
+    const refreshEv = () => m.groupEvaluations(evBox, g);
+    // بعد ما الحضور يتسجل، جدول التقييم بيتحدث معاه
+    m.groupSessions(root.querySelector("#sesBox"), g, refreshEv);
+    refreshEv();
+    m.contentSection(root.querySelector("#contentBox"), { courseId: g.courseId, courseName: g.courseName, group: g });
+  });
   if (root.querySelector("#editBtn")) root.querySelector("#editBtn").addEventListener("click", () => view.openForm(g, () => renderDetail(root, id)));
 }

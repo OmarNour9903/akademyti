@@ -1,7 +1,7 @@
-import { db, fs } from "../firebase.js?v=20261126234443";
-import { t } from "../i18n.js?v=20261126234443";
-import { esc, toast, UserError, confirmBox, isPreview } from "../util.js?v=20261126234443";
-import { col, ref, audit, session, DEFAULT_CODES, codeFormat, formatCode, resetCodeCache } from "../data.js?v=20261126234443";
+import { db, fs } from "../firebase.js?v=20261128075446";
+import { t } from "../i18n.js?v=20261128075446";
+import { esc, toast, UserError, confirmBox, isPreview } from "../util.js?v=20261128075446";
+import { col, ref, audit, session, DEFAULT_CODES, codeFormat, formatCode, resetCodeCache } from "../data.js?v=20261128075446";
 
 const ENTITIES = [["students", "students"], ["courses", "courses"], ["instructors", "instructors"], ["employees", "employees"], ["groups", "groups_suffix"]];
 

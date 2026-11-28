@@ -296,3 +296,61 @@ td.font-monospace { color: var(--ticket); font-size: .85rem; }
   .inst-table .badge { font-size: .7rem; padding: .3em .5em; }
 }
 .badge.font-monospace, .code-chip, td.font-monospace, td[dir="ltr"] { white-space: nowrap; }
+
+/* ===== المرحلة 3: الحضور والتقييم والانضباط والمحتوى ===== */
+.badge.att-present { background: var(--stamp-tint); color: var(--stamp-dark); }
+.badge.att-late { background: var(--warn-tint); color: var(--warn); }
+.badge.att-excused { background: #E4ECF5; color: #1D4E89; }
+.badge.att-absent { background: var(--danger-tint); color: var(--danger); }
+
+.att-list { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.att-row { display: flex; align-items: center; gap: .75rem; padding: .55rem .75rem; border-bottom: 1px solid var(--line-2); background: var(--surface); }
+.att-row:last-child { border-bottom: 0; }
+.att-row:has(input[value="absent"]:checked) { background: #FFF8F7; }
+.att-who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.att-opts { display: flex; gap: .3rem; flex-shrink: 0; }
+.att-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); min-width: 4.6rem; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; }
+.att-btn:hover { border-color: var(--ink-2); }
+.btn-check:checked + .att-btn-present { background: var(--stamp); border-color: var(--stamp); color: #fff; }
+.btn-check:checked + .att-btn-late { background: var(--warn); border-color: var(--warn); color: #fff; }
+.btn-check:checked + .att-btn-excused { background: #1D4E89; border-color: #1D4E89; color: #fff; }
+.btn-check:checked + .att-btn-absent { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-check:focus-visible + .att-btn { outline: 2px solid var(--stamp); outline-offset: 2px; }
+
+.att-summary { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; font-size: .92rem; }
+.eval-card { border: 1px solid var(--line); border-radius: var(--radius); padding: .9rem 1rem; margin-bottom: .75rem; background: var(--paper); }
+
+.badge.disc-warning { background: var(--warn-tint); color: var(--warn); }
+.badge.disc-caution { background: #FFF6DC; color: var(--ticket); }
+.badge.disc-suspension { background: var(--danger-tint); color: var(--danger); }
+.badge.ds-in_force { background: var(--danger); color: #fff; }
+.badge.ds-upcoming { background: var(--warn-tint); color: var(--warn); }
+.badge.ds-ended, .badge.ds-lifted { background: var(--line-2); color: var(--ink-2); }
+
+/* فلتر الكورسات في صفحة الطالب */
+.course-filter { display: flex; align-items: center; gap: .4rem; overflow-x: auto; padding: .2rem 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.course-filter::-webkit-scrollbar { display: none; }
+.cf-label { font-size: .85rem; color: var(--ink-2); white-space: nowrap; margin-inline-end: .25rem; }
+.cf-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: .38rem .95rem; font-size: .9rem; white-space: nowrap; font-weight: 500; }
+.cf-btn:hover { border-color: var(--ink-2); }
+.cf-btn.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; }
+.stat-tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: .75rem 1rem; display: flex; flex-direction: column; gap: .15rem; }
+.st-label { font-size: .8rem; color: var(--ink-2); }
+.st-value { font-size: 1.2rem; font-weight: 700; color: var(--ink); }
+
+.content-list { list-style: none; padding: 0; margin: 0; }
+.content-list li { display: flex; align-items: center; gap: .75rem; padding: .65rem 0; border-bottom: 1px solid var(--line-2); }
+.content-list li:last-child { border-bottom: 0; }
+.ct-icon { font-size: 1.35rem; color: var(--stamp); width: 2.2rem; height: 2.2rem; display: inline-flex; align-items: center; justify-content: center; background: var(--stamp-tint); border-radius: var(--radius-sm); flex-shrink: 0; }
+.min-w-0 { min-width: 0; }
+
+@media (max-width: 767.98px) {
+  .att-row { flex-direction: column; align-items: stretch; gap: .45rem; }
+  .att-opts { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .att-btn { min-width: 0; flex-direction: column; gap: 0; padding: .4rem .2rem; font-size: .78rem; }
+  .att-btn i { font-size: 1rem; }
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .st-value { font-size: 1.05rem; }
+}

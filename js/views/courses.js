@@ -1,10 +1,10 @@
-import { fs } from "../firebase.js?v=20261126234443";
-import { t } from "../i18n.js?v=20261126234443";
-import { esc } from "../util.js?v=20261126234443";
-import { col, session } from "../data.js?v=20261126234443";
-import { can, hasSpecial } from "../perms.js?v=20261126234443";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261126234443";
-import { groupsTable } from "./groups.js?v=20261126234443";
+import { fs } from "../firebase.js?v=20261128075446";
+import { t } from "../i18n.js?v=20261128075446";
+import { esc } from "../util.js?v=20261128075446";
+import { col, session } from "../data.js?v=20261128075446";
+import { can, hasSpecial } from "../perms.js?v=20261128075446";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128075446";
+import { groupsTable } from "./groups.js?v=20261128075446";
 
 const statuses = ["available", "paused", "archived"];
 
@@ -59,9 +59,11 @@ export async function renderDetail(root, id) {
       <div class="col-12"><div class="card card-soft p-4">
         <h2 class="h6 fw-bold mb-3">${t("course_students")}</h2><div id="stuBox"></div>
       </div></div>
+      <div class="col-12"><div class="card card-soft p-4" id="contentBox"></div></div>
     </div>`;
+  import("../ops.js?v=20261128075446").then((m) => m.contentSection(root.querySelector("#contentBox"), { courseId: c.id, courseName: c.name }));
   if (root.querySelector("#editBtn")) root.querySelector("#editBtn").addEventListener("click", () => view.openForm(c, () => renderDetail(root, id)));
-  import("../enroll.js?v=20261126234443").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "courseId", id));
+  import("../enroll.js?v=20261128075446").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "courseId", id));
   if (!can(S, "groups", "view")) { root.querySelector("#groupsBox").innerHTML = `<p class="text-muted small">${t("no_permission")}</p>`; root.querySelector("#instList").textContent = t("no_permission"); return; }
   const snap = await fs.getDocs(fs.query(col("groups"), fs.where("courseId", "==", id)));
   const groups = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((g) => !g.deleted);

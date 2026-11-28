@@ -363,3 +363,13 @@ td.font-monospace { color: var(--ticket); font-size: .85rem; }
   .stat-row { grid-template-columns: repeat(2, 1fr); }
   .st-value { font-size: 1.05rem; }
 }
+
+/* شريط "فيه تحديث": كارت ثابت تحت، فوق شريط التنقل في الموبايل */
+.update-bar { position: fixed; z-index: 2000; inset-inline: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom)); margin-inline: auto; max-width: 560px; display: flex; align-items: center; gap: .75rem; background: var(--ink); color: #fff; border-radius: var(--radius); padding: .75rem .75rem .75rem 1rem; box-shadow: 0 8px 24px rgba(23, 43, 58, .25); font-size: .93rem; }
+.update-bar .bi { font-size: 1.2rem; color: #7FD4B8; flex-shrink: 0; }
+.update-text { flex: 1; }
+.update-btn { background: var(--stamp); border-color: var(--stamp); color: #fff; font-weight: 600; padding-inline: 1.1rem; flex-shrink: 0; }
+.update-btn:hover, .update-btn:focus-visible { background: var(--stamp-dark); border-color: var(--stamp-dark); color: #fff; }
+@media (max-width: 991.98px) {
+  .has-bottom-nav .update-bar, body:has(.bottom-nav) .update-bar { bottom: calc(var(--bottom-h) + .75rem + env(safe-area-inset-bottom)); }
+}

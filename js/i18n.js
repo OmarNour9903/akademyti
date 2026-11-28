@@ -481,7 +481,9 @@ const dict = {
     att_policy_hint: "الحاضر بياخد المحاضرة كاملة، والغائب من غير عذر صفر، والغائب بعذر ما بيتحسبش. أي حالة بعذر ما بتنقصش من التقييم. حدد هنا التأخير والانصراف المبكر من غير عذر بيتحسبوا كام % من المحاضرة.",
     late_credit: "التأخير من غير عذر",
     early_credit: "الانصراف المبكر من غير عذر",
-    err_percent: "النسبة لازم تكون من 0 لـ 100."
+    err_percent: "النسبة لازم تكون من 0 لـ 100.",
+    update_available: "فيه تحديث جديد للسيستم. احفظ شغلك ودوس تحديث.",
+    update_now: "تحديث"
   },
   en: {
     brand: "Akademyti",
@@ -965,7 +967,9 @@ const dict = {
     att_policy_hint: "Present counts as a full session, unexcused absence as zero, and excused absence isn't counted. Anything excused doesn't lower the grade. Set how much an unexcused late arrival or early leave counts, as a % of a session.",
     late_credit: "Unexcused late arrival",
     early_credit: "Unexcused early leave",
-    err_percent: "The percentage must be between 0 and 100."
+    err_percent: "The percentage must be between 0 and 100.",
+    update_available: "A new version of the system is available. Save your work, then tap Update.",
+    update_now: "Update"
   }
 };
 

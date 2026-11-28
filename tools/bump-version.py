@@ -11,4 +11,5 @@ for f in files:
     n = pat.sub(lambda m: f'{m.group(1)}{m.group(2)}?v={v}{m.group(1)}', s)
     if n != s:
         f.write_text(n, encoding="utf-8")
+(root / "version.json").write_text('{"v": "%s"}\n' % v, encoding="utf-8")
 print("version", v)

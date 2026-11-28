@@ -1,9 +1,9 @@
-import { fs } from "../firebase.js?v=20261128082152";
-import { t } from "../i18n.js?v=20261128082152";
-import { esc, UserError } from "../util.js?v=20261128082152";
-import { col, session, nextNumber, codeFormat } from "../data.js?v=20261128082152";
-import { can, hasSpecial } from "../perms.js?v=20261128082152";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128082152";
+import { fs } from "../firebase.js?v=20261128083421";
+import { t } from "../i18n.js?v=20261128083421";
+import { esc, UserError } from "../util.js?v=20261128083421";
+import { col, session, nextNumber, codeFormat } from "../data.js?v=20261128083421";
+import { can, hasSpecial } from "../perms.js?v=20261128083421";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128083421";
 
 const statuses = ["open", "running", "finished", "cancelled", "archived"];
 let cache = { courses: [], instructors: [] };
@@ -107,8 +107,8 @@ export async function renderDetail(root, id) {
       <div class="col-12"><div class="card card-soft p-4"><h2 class="h6 fw-bold mb-3">${t("group_evaluations")}</h2><div id="evBox"></div></div></div>
       <div class="col-12"><div class="card card-soft p-4" id="contentBox"></div></div>
     </div>`;
-  import("../enroll.js?v=20261128082152").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
-  import("../ops.js?v=20261128082152").then((m) => {
+  import("../enroll.js?v=20261128083421").then((m) => m.enrolledStudents(root.querySelector("#stuBox"), "groupId", id));
+  import("../ops.js?v=20261128083421").then((m) => {
     const evBox = root.querySelector("#evBox");
     const refreshEv = () => m.groupEvaluations(evBox, g);
     // بعد ما الحضور يتسجل، جدول التقييم بيتحدث معاه

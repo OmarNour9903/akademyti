@@ -1,10 +1,10 @@
 // التشغيل اليومي: المحاضرات والحضور، التقييمات، الانضباط، المحتوى
-import { fs } from "./firebase.js?v=20261128081858";
-import { t } from "./i18n.js?v=20261128081858";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128081858";
-import { col, ref, audit, softDelete, session } from "./data.js?v=20261128081858";
-import { can } from "./perms.js?v=20261128081858";
-import { today } from "./enroll.js?v=20261128081858";
+import { fs } from "./firebase.js?v=20261128082152";
+import { t } from "./i18n.js?v=20261128082152";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128082152";
+import { col, ref, audit, softDelete, session } from "./data.js?v=20261128082152";
+import { can } from "./perms.js?v=20261128082152";
+import { today } from "./enroll.js?v=20261128082152";
 
 const noPerm = () => `<p class="text-muted small mb-0">${t("no_permission")}</p>`;
 const empty = (key = "no_data") => `<p class="text-muted small mb-0">${t(key)}</p>`;
@@ -230,6 +230,7 @@ export async function openAttendance(sess, group, done) {
   body.addEventListener("change", (ev) => {
     const rowEl = ev.target.closest(".att-row");
     if (rowEl) sync(rowEl.dataset.i);
+    body.querySelector("#appModalError")?.classList.add("d-none");
     count();
   });
   body.querySelector("#restPresent").addEventListener("click", () => {

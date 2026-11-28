@@ -1,5 +1,5 @@
-import { auth, db, authMod, fs } from "./firebase.js?v=20261128081858";
-import { OWNER_EMAIL } from "./config.js?v=20261128081858";
+import { auth, db, authMod, fs } from "./firebase.js?v=20261128082152";
+import { OWNER_EMAIL } from "./config.js?v=20261128082152";
 
 export const isOwnerUser = (user) => !!user && user.email && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase();
 

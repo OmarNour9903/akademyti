@@ -1,7 +1,7 @@
-import { db, fs } from "../firebase.js?v=20261128081858";
-import { t } from "../i18n.js?v=20261128081858";
-import { esc, toast, UserError, confirmBox, isPreview } from "../util.js?v=20261128081858";
-import { col, ref, audit, session, DEFAULT_CODES, codeFormat, formatCode, resetCodeCache } from "../data.js?v=20261128081858";
+import { db, fs } from "../firebase.js?v=20261128082152";
+import { t } from "../i18n.js?v=20261128082152";
+import { esc, toast, UserError, confirmBox, isPreview } from "../util.js?v=20261128082152";
+import { col, ref, audit, session, DEFAULT_CODES, codeFormat, formatCode, resetCodeCache } from "../data.js?v=20261128082152";
 
 const ENTITIES = [["students", "students"], ["courses", "courses"], ["instructors", "instructors"], ["employees", "employees"], ["groups", "groups_suffix"]];
 
@@ -10,7 +10,7 @@ export async function render(root) {
   resetCodeCache();
   const fmts = {};
   for (const [k] of ENTITIES) fmts[k] = await codeFormat(k);
-  const { loadAttPolicy } = await import("../ops.js?v=20261128081858");
+  const { loadAttPolicy } = await import("../ops.js?v=20261128082152");
   const pol = await loadAttPolicy();
   const cats = (await fs.getDocs(col("expenseCategories"))).docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.deleted);
   root.innerHTML = `<h1 class="h4 fw-bold mb-4">${t("settings")}</h1>

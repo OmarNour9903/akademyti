@@ -1,4 +1,4 @@
-import { currentLang } from "./i18n.js?v=20261128081858";
+import { currentLang } from "./i18n.js?v=20261128082152";
 
 export const ACTIONS = ["view", "add", "edit", "delete"];
 

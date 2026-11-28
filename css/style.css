@@ -270,8 +270,9 @@ td.font-monospace { color: var(--ticket); font-size: .85rem; }
   .table.stackable, .table.stackable > tbody, .table.stackable > tbody > tr, .table.stackable > tbody > tr > td { display: block; width: 100%; }
   .table.stackable > tbody > tr { border: 1px solid var(--line); border-radius: var(--radius-sm); margin-bottom: .6rem; padding: .35rem .75rem; background: var(--surface); }
   .table.stackable > tbody > tr.table-danger { background: #FEF5F4; }
-  .table.stackable > tbody > tr > td { border: 0; padding: .35rem 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem; text-align: start !important; }
-  .table.stackable > tbody > tr > td::before { content: attr(data-label); color: var(--ink-soft); font-size: .8rem; font-weight: 500; flex-shrink: 0; }
+  .table.stackable > tbody > tr > td { border: 0; padding: .35rem 0; display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: .35rem .4rem; text-align: start !important; }
+  .table.stackable > tbody > tr > td::before { content: attr(data-label); color: var(--ink-soft); font-size: .8rem; font-weight: 500; flex-shrink: 0; margin-inline-end: auto; padding-inline-end: .6rem; }
+  .table.stackable > tbody > tr > td > .btn { flex-shrink: 0; }
   .table.stackable > tbody > tr > td[data-label=""]::before { content: none; }
   .table.stackable > tbody > tr > td[data-label=""] { justify-content: flex-end; }
   .table.stackable > tbody > tr > td[colspan] { justify-content: center; }

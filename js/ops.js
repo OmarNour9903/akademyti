@@ -1,10 +1,10 @@
 // التشغيل اليومي: المحاضرات والحضور، التقييمات، الانضباط، المحتوى
-import { fs } from "./firebase.js?v=20261128075446";
-import { t } from "./i18n.js?v=20261128075446";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128075446";
-import { col, ref, audit, softDelete, session } from "./data.js?v=20261128075446";
-import { can } from "./perms.js?v=20261128075446";
-import { today } from "./enroll.js?v=20261128075446";
+import { fs } from "./firebase.js?v=20261128080223";
+import { t } from "./i18n.js?v=20261128080223";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128080223";
+import { col, ref, audit, softDelete, session } from "./data.js?v=20261128080223";
+import { can } from "./perms.js?v=20261128080223";
+import { today } from "./enroll.js?v=20261128080223";
 
 const noPerm = () => `<p class="text-muted small mb-0">${t("no_permission")}</p>`;
 const empty = (key = "no_data") => `<p class="text-muted small mb-0">${t(key)}</p>`;
@@ -143,7 +143,7 @@ export async function openAttendance(sess, group, done) {
       students.push({ id: sid, code: n.split(" ")[0], name: n.split(" ").slice(1).join(" "), former: true });
     }
   });
-  if (!students.length) { toast(t(can(session(), "enrollments", "view") ? "no_group_students" : "att_need_enroll_perm"), "warning"); return; }
+  if (!students.length) { toast(t(can(session(), "enrollments", "view") ? "no_group_students" : "att_need_enroll_perm"), "warning"); done(); return; }
   students.sort((a, b) => (a.code || "").localeCompare(b.code || ""));
   const fresh = !Object.keys(att).length;
   const row = (s, i) => {

@@ -1,11 +1,11 @@
-import { t } from "../i18n.js?v=20261128075446";
-import { esc, toast } from "../util.js?v=20261128075446";
-import { session } from "../data.js?v=20261128075446";
-import { can, hasSpecial } from "../perms.js?v=20261128075446";
-import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128075446";
-import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261128075446";
-import { loadStudentEnrollments, loadStudentPayments, renderStudentEnrollments, renderStudentPayments, enrollmentTotals } from "../enroll.js?v=20261128075446";
-import { studentSessionsList, attStats, pctText, attBadge, loadEvaluations, effectiveAttGrade, gradeText, openEvaluation, loadDiscipline, activeSuspension, disciplineTable, bindDiscipline, openDiscipline } from "../ops.js?v=20261128075446";
+import { t } from "../i18n.js?v=20261128080223";
+import { esc, toast } from "../util.js?v=20261128080223";
+import { session } from "../data.js?v=20261128080223";
+import { can, hasSpecial } from "../perms.js?v=20261128080223";
+import { crudView, statusBadge, infoGrid, getOne, fmtMoney } from "../crud.js?v=20261128080223";
+import { createLogin, sendReset, passwordField } from "../accounts.js?v=20261128080223";
+import { loadStudentEnrollments, loadStudentPayments, renderStudentEnrollments, renderStudentPayments, enrollmentTotals } from "../enroll.js?v=20261128080223";
+import { studentSessionsList, attStats, pctText, attBadge, loadEvaluations, effectiveAttGrade, gradeText, openEvaluation, loadDiscipline, activeSuspension, disciplineTable, bindDiscipline, openDiscipline } from "../ops.js?v=20261128080223";
 
 const statuses = ["active", "suspended", "archived"];
 
@@ -102,7 +102,7 @@ export async function renderDetail(root, id) {
   const reload = () => renderDetail(root, id);
   root.querySelector("#editBtn")?.addEventListener("click", () => view.openForm(s, reload));
   root.querySelector("#resetBtn")?.addEventListener("click", async () => { await sendReset(s.email); toast(t("reset_sent_to") + " " + s.email); });
-  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261128075446").then((m) => m.openCreateLogin("students", "student", s, reload)));
+  root.querySelector("#loginBtn")?.addEventListener("click", () => import("./portal-account.js?v=20261128080223").then((m) => m.openCreateLogin("students", "student", s, reload)));
 
   const draw = () => {
     const cid = courseFilter[id] || "";

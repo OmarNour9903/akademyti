@@ -1,10 +1,10 @@
 // مستحقات المحاضر: النسبة بتتحسب على المحصّل فعلاً من طلاب المجموعة
-import { fs } from "./firebase.js?v=20261128075446";
-import { t } from "./i18n.js?v=20261128075446";
-import { esc } from "./util.js?v=20261128075446";
-import { col, session } from "./data.js?v=20261128075446";
-import { can } from "./perms.js?v=20261128075446";
-import { fmtMoney } from "./crud.js?v=20261128075446";
+import { fs } from "./firebase.js?v=20261128080223";
+import { t } from "./i18n.js?v=20261128080223";
+import { esc } from "./util.js?v=20261128080223";
+import { col, session } from "./data.js?v=20261128080223";
+import { can } from "./perms.js?v=20261128080223";
+import { fmtMoney } from "./crud.js?v=20261128080223";
 
 const r2 = (n) => Math.round(n * 100) / 100;
 
@@ -18,10 +18,20 @@ export async function instructorDues(box, inst, groups, sessions = []) {
   for (const g of groups) {
     let base = null, due = null;
     if (inst.payType === "percentage") {
-      const ps = await fs.getDocs(fs.query(col("payments"), fs.where("groupId", "==", g.id)));
-      const refunds = await fs.getDocs(fs.query(col("transactions"), fs.where("groupId", "==", g.id)));
-      const refunded = refunds.docs.map((d) => d.data()).filter((x) => x.type === "refund" && !x.reversedBy).reduce((s, x) => s + x.amount, 0);
-      base = r2(ps.docs.map((d) => d.data()).filter((p) => !p.reversedBy).reduce((s, p) => s + p.amount, 0) - refunded);
+      const ps = (await fs.getDocs(fs.query(col("payments"), fs.where("groupId", "==", g.id)))).docs.map((d) => d.data()).filter((p) => !p.reversedBy);
+      // الاسترداد بيتوزع على المجموعات حسب المدفوع فيها (عشان الطالب اللي اتنقل ودفع في مجموعته القديمة)
+      let refunded = 0;
+      for (const eid of [...new Set(ps.map((p) => p.enrollmentId))]) {
+        const [allP, tx] = await Promise.all([
+          fs.getDocs(fs.query(col("payments"), fs.where("enrollmentId", "==", eid))),
+          fs.getDocs(fs.query(col("transactions"), fs.where("enrollmentId", "==", eid)))
+        ]);
+        const total = allP.docs.map((d) => d.data()).filter((p) => !p.reversedBy).reduce((a, p) => a + p.amount, 0);
+        const here = ps.filter((p) => p.enrollmentId === eid).reduce((a, p) => a + p.amount, 0);
+        const ref = tx.docs.map((d) => d.data()).filter((x) => x.type === "refund" && !x.reversedBy).reduce((a, x) => a + x.amount, 0);
+        if (total > 0) refunded += (ref * here) / total;
+      }
+      base = r2(ps.reduce((a, p) => a + p.amount, 0) - refunded);
       due = r2(base * (Number(inst.payAmount) || 0) / 100);
     } else if (inst.payType === "perStudent") {
       const es = await fs.getDocs(fs.query(col("enrollments"), fs.where("groupId", "==", g.id), fs.where("status", "==", "active")));
@@ -49,7 +59,7 @@ export async function instructorDues(box, inst, groups, sessions = []) {
     ${general ? `<p class="small">${t("dues_general_paid")}: <b>${fmtMoney(general)}</b></p>` : ""}
     ${canPay ? `<button class="btn btn-sm btn-outline-success" data-payout="" data-amt=""><i class="bi bi-cash-coin"></i> ${t("pay_out_general")}</button>` : ""}`;
   box.querySelectorAll("[data-payout]").forEach((b) => b.addEventListener("click", async () => {
-    const { openExpense } = await import("./views/finance.js?v=20261128075446");
+    const { openExpense } = await import("./views/finance.js?v=20261128080223");
     const g = groups.find((x) => x.id === b.dataset.payout);
     openExpense(() => instructorDues(box, inst, groups), {
       categoryName: t("instructor_pay_cat"), instructorId: inst.id, groupId: g ? g.id : "", amount: b.dataset.amt,

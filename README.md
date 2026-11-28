@@ -16,6 +16,9 @@
 ## قبل كل commit
 شغّل `python3 tools/bump-version.py` و `node tools/check-imports.js` عشان المتصفحات تاخد النسخة الجديدة ومتفضلش على الكاش.
 
+## تنبيه التحديث
+`tools/bump-version.py` بيكتب رقم النسخة في `version.json`. أي صفحة مفتوحة بتفحصه كل دقيقة، ولما الموظف يرجع للتاب. لو الرقم اتغير يظهر شريط "فيه تحديث" وزرار "تحديث" بيفتح الصفحة بالنسخة الجديدة (`js/update-check.js`).
+
 ## نشر قواعد Firestore
 القواعد في `firestore.rules`. تتنشر من Firebase Console ← Firestore ← Rules، أو بـ `firebase deploy --only firestore:rules`.
 

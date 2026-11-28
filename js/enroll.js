@@ -1,11 +1,11 @@
 // الاشتراكات والأقساط والدفعات والإيصالات
-import { db, fs } from "./firebase.js?v=20261128083421";
-import { t, currentLang } from "./i18n.js?v=20261128083421";
-import { esc, toast, openModal, UserError } from "./util.js?v=20261128083421";
-import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261128083421";
-import { can, hasSpecial } from "./perms.js?v=20261128083421";
-import { fmtMoney, statusBadge } from "./crud.js?v=20261128083421";
-import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261128083421";
+import { db, fs } from "./firebase.js?v=20261128083523";
+import { t, currentLang } from "./i18n.js?v=20261128083523";
+import { esc, toast, openModal, UserError } from "./util.js?v=20261128083523";
+import { col, ref, audit, nextCode, nextNumber, session } from "./data.js?v=20261128083523";
+import { can, hasSpecial } from "./perms.js?v=20261128083523";
+import { fmtMoney, statusBadge } from "./crud.js?v=20261128083523";
+import { myTreasuries, recordTx, balRef, migrateLegacy } from "./money.js?v=20261128083523";
 
 // تاريخ النهارده بالتوقيت المحلي (مش UTC)
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;

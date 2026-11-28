@@ -1,8 +1,8 @@
 // "عين" المدير: يشوف السيستم بصلاحيات قسم أو موظف معيّن (معاينة للقراءة بس)
-import { t } from "./i18n.js?v=20261128083421";
-import { esc, openModal } from "./util.js?v=20261128083421";
-import { listActive } from "./data.js?v=20261128083421";
-import { effective } from "./perms.js?v=20261128083421";
+import { t } from "./i18n.js?v=20261128083523";
+import { esc, openModal } from "./util.js?v=20261128083523";
+import { listActive } from "./data.js?v=20261128083523";
+import { effective } from "./perms.js?v=20261128083523";
 
 const KEY = "viewAs";
 

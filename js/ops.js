@@ -1,10 +1,10 @@
 // التشغيل اليومي: المحاضرات والحضور، التقييمات، الانضباط، المحتوى
-import { fs } from "./firebase.js?v=20261128083421";
-import { t } from "./i18n.js?v=20261128083421";
-import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128083421";
-import { col, ref, audit, softDelete, session } from "./data.js?v=20261128083421";
-import { can } from "./perms.js?v=20261128083421";
-import { today } from "./enroll.js?v=20261128083421";
+import { fs } from "./firebase.js?v=20261128083523";
+import { t } from "./i18n.js?v=20261128083523";
+import { esc, toast, openModal, confirmBox, UserError } from "./util.js?v=20261128083523";
+import { col, ref, audit, softDelete, session } from "./data.js?v=20261128083523";
+import { can } from "./perms.js?v=20261128083523";
+import { today } from "./enroll.js?v=20261128083523";
 
 const noPerm = () => `<p class="text-muted small mb-0">${t("no_permission")}</p>`;
 const empty = (key = "no_data") => `<p class="text-muted small mb-0">${t(key)}</p>`;

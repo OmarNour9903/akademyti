@@ -1,5 +1,6 @@
 // تنبيه "فيه تحديث": لو اترفعت نسخة جديدة والصفحة مفتوحة على القديمة، بيظهر شريط فيه زرار "تحديث"
-import { t } from "./i18n.js?v=20261128083421";
+// الفحص كل دقيقة، ولما الموظف يرجع للتاب. رقم النسخة بيتكتب في version.json من tools/bump-version.py
+import { t } from "./i18n.js?v=20261128083523";
 
 const CURRENT = new URL(import.meta.url).searchParams.get("v") || "";
 const EVERY = 60 * 1000;

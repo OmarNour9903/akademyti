@@ -1,6 +1,6 @@
-import "./update-check.js?v=20261128083421";
-import { applyI18n, toggleLang } from "./i18n.js?v=20261128083421";
-import { requireSession, logout } from "./session.js?v=20261128083421";
+import "./update-check.js?v=20261128083523";
+import { applyI18n, toggleLang } from "./i18n.js?v=20261128083523";
+import { requireSession, logout } from "./session.js?v=20261128083523";
 
 applyI18n();
 document.getElementById("langBtn").addEventListener("click", toggleLang);

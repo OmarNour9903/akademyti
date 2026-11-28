@@ -1,8 +1,8 @@
-import { fs } from "../firebase.js?v=20261128083421";
-import { t } from "../i18n.js?v=20261128083421";
-import { esc } from "../util.js?v=20261128083421";
-import { col } from "../data.js?v=20261128083421";
-import { MODULES, label } from "../perms.js?v=20261128083421";
+import { fs } from "../firebase.js?v=20261128083523";
+import { t } from "../i18n.js?v=20261128083523";
+import { esc } from "../util.js?v=20261128083523";
+import { col } from "../data.js?v=20261128083523";
+import { MODULES, label } from "../perms.js?v=20261128083523";
 
 const entityLabel = (e) => {
   const m = MODULES.find((x) => x.key === e);
